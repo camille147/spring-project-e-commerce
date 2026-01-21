@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .securityMatcher("/api/**") // Cette config QUE pour URLs /api/...
                 .csrf(csrf -> csrf.disable()) // Désactivé pour les API REST
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/users").permitAll() // Login API public
+                        .requestMatchers("/api/auth/**", "/api/**").permitAll() // Login API public
                         .anyRequest().authenticated() //tout le reste requiert un Token
                 )
                 .sessionManagement(session -> session

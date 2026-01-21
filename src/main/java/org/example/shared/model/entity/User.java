@@ -1,5 +1,6 @@
 package org.example.shared.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,13 +19,14 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Email
     @NotBlank(message = "Email is mandatory")
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    @JsonIgnore
     @NotBlank(message = "Password is mandatory")
     @Column(nullable = false)
     private String password;
@@ -37,7 +39,7 @@ public class User {
     @NotBlank(message = "First name is mandatory")
     @Size(min = 3)
     @Column(nullable = false)
-    private String name;
+    private String firstName;
 
     @Column(nullable = false)
     private LocalDate birthDate;

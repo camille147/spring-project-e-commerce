@@ -23,8 +23,6 @@ public class Order {
     @Size(min = 9, max = 9)
     private String orderNumber;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The order date is mandatory")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
