@@ -46,6 +46,7 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**").permitAll()
                         .requestMatchers("/h2-console/**", "/static/**", "/login", "/home", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -71,6 +72,7 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    //définit comment les mots de passe sont hashés
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
