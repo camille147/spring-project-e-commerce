@@ -4,21 +4,20 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
-import org.example.shared.model.enumeration.UserRole;
-
+import lombok.Getter;
+import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
+@Setter
+@Getter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Email
     @NotBlank(message = "Email is mandatory")
@@ -55,5 +54,6 @@ public class User {
 //
 //    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 //    private Set<Address> addresses;
+
 
 }

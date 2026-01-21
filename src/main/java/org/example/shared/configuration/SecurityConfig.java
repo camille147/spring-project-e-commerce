@@ -46,31 +46,24 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/static/**", "/login").permitAll()
+                        .requestMatchers("/h2-console/**", "/static/**", "/login", "/home", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login") // Ta page Thymeleaf personnalisée
+                        .loginPage("/login")
+                        .usernameParameter("email")
+                        .loginProcessingUrl("/perform_login")
                         .defaultSuccessUrl("/home", true)
+                        .failureUrl("/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout.permitAll())
-                // Autoriser H2 à s'afficher dans un navigateur (Frames)
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         return http.build();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user@example.com")
-                .password("password")
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
 
     // Permet d'injecter l'AuthenticationManager dans AuthController
     @Bean
@@ -78,7 +71,6 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    //définit comment les mots de passe sont hashés
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
