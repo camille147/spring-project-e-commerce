@@ -42,9 +42,10 @@ public class User {
     @Column(nullable = false)
     private LocalDate birthDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserRole role;
+//    @Enumerated(EnumType.STRING)
+//    @Column(nullable = false)
+//    private UserRole role;
+
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.of(LocalDate.now(), LocalTime.now());

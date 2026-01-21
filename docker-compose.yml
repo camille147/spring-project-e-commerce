@@ -1,28 +1,29 @@
 version: '3.8'
 
 services:
-  # Votre application E-commerce
-  ecommerce-app:
+  app-vue:
     build: .
     ports:
-      - "8080:8080"
+      - "${PORT_VUE}:8080"
+    env_file: .env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/ecommerce_db
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      - db
-
-  # La base de données (PostgreSQL)
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=ecommerce_db
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - SERVER_PORT=8080
+    # On lance le JAR en pointant explicitement vers la classe de la VUE
+    command: java -cp app.jar -Dloader.main=org.example.springecommerce.SpringECommerceApplication org.springframework.boot.loader.launch.JarLauncher
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - h2_data:/app/data
+
+  app-api:
+    build: .
+    ports:
+      - "${PORT_API}:8081"
+    env_file: .env
+    environment:
+      - SERVER_PORT=8081
+    # On lance le JAR en pointant explicitement vers la classe de l'API
+    command: java -cp app.jar -Dloader.main=org.example.springecommerceapi.SpringECommerceApiApplication org.springframework.boot.loader.launch.JarLauncher
+    volumes:
+      - h2_data:/app/data
 
 volumes:
-  db_data:
+  h2_data:
