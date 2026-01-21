@@ -1,0 +1,128 @@
+@font-face {
+    font-family: 'Playfair Display';
+    src: url('../fonts/PlayfairDisplay.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('../fonts/Montserrat.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+:root {
+    --platine: #E5E4E2;
+    --anthracite: #1F1F1F;
+    --or-champagne: #D4AF37;
+    --obsidienne: #0A0A0A;
+    --body-background-color: #F2F2F2;
+}
+
+body {
+    background: #F2F2F2;
+}
+
+div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    font-family: 'Playfair Display', Serif;
+    font-size: 35px;
+}
+
+p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 20px;
+}
+
+label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 17px;
+}
+
+input {
+    border: 2px solid var(--platine);
+    border-radius: 50px;
+    padding: 10px 20px;
+    outline: none;
+    transition: border-color 0.3s;
+    font-family: Montserrat;
+    font-size: 17px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+button {
+    border: 2px solid var(--platine);
+    border-radius: 50px;
+    padding: 10px 20px;
+    background: var(--body-background-color);
+    font-family: Montserrat;
+    font-size: 17px;
+}
+
+img {
+    object-fit: cover;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    gap: 20px;
+    width: 450px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    width: 100%;
+}
+
+.small-text {
+    font-size: 14px;
+}
+
+#login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    background: white;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#input-login-form {
+    padding-bottom: 20px;
+}
+
+#forgot-password {
+    text-decoration: none;
+    color: inherit;
+}
+
+#forgot-password {
+    align-self: flex-end;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+#connect-button {
+    margin-top: 20px;
+}
+
+#login-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
