@@ -62,13 +62,15 @@ button {
     border: 2px solid var(--platine);
     border-radius: 50px;
     padding: 10px 20px;
-    background: var(--body-background-color);
+    background: var(--anthracite);
     font-family: Montserrat;
     font-size: 17px;
+    color: var(--platine);
 }
 
 img {
     object-fit: cover;
+    padding-bottom: -20px;
 }
 
 .box {
@@ -80,6 +82,14 @@ img {
     width: 450px;
 }
 
+.big-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    width: 750px;
+}
+
 .form-group {
     display: flex;
     flex-direction: column;
@@ -87,11 +97,19 @@ img {
     width: 100%;
 }
 
+.register-form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
 .small-text {
     font-size: 14px;
 }
 
-#login-form {
+#login-form, #register-form {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -121,8 +139,23 @@ img {
     margin-top: 20px;
 }
 
-#login-body {
+#register-button {
+    margin-top: 40px;
+}
+
+#login-body, #register-body {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#register-inputs {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 50px;
+}
+
+#register-logo {
+    margin-bottom: -20px;
 }
