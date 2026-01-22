@@ -37,4 +37,6 @@ public class Address {
     @Column(nullable = false)
     @NotBlank(message = "The address must have a state")
     private Boolean isActive = true;
+
+
 }
