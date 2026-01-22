@@ -4,30 +4,43 @@
   <title>Inscription - TechZone</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-<body>
-<form th:action="@{/register}" th:object="${user}" method="post">
-  <div class="form-group">
-    <label>Prénom :</label>
-    <input type="text" th:field="*{name}" required>
-  </div>
-  <div class="form-group">
-    <label>Nom :</label>
-    <input type="text" th:field="*{lastName}" required>
-  </div>
-  <div class="form-group">
-    <label>Email :</label>
-    <input type="email" th:field="*{email}" required>
-  </div>
-  <div class="form-group">
-    <label>Date de naissance :</label>
-    <input type="date" th:field="*{birthDate}" required>
-  </div>
-  <div class="form-group">
-    <label>Mot de passe :</label>
-    <input type="password" th:field="*{password}" required>
-  </div>
-  <button type="submit">S'inscrire</button>
-</form>
-<p><a th:href="@{/login}">Déjà un compte ? Se connecter</a></p>
+<body id="register-body">
+<div class="big-box">
+  <img id="register-logo" th:src="@{/files/logo.png}" width="150" height="150" alt="Logo" />
+  <form th:action="@{/register}" th:object="${user}" method="post" id="register-form">
+    <div id="register-inputs">
+      <div>
+        <div class="register-form-group">
+          <label>Prénom :</label>
+          <input type="text" th:field="*{name}" required>
+        </div>
+        <div class="register-form-group">
+          <label>Nom :</label>
+          <input type="text" th:field="*{lastName}" required>
+        </div>
+        <div class="register-form-group">
+          <label>Email :</label>
+          <input type="email" th:field="*{email}" required>
+        </div>
+      </div>
+      <div>
+        <div class="register-form-group">
+          <label>Date de naissance :</label>
+          <input type="date" th:field="*{birthDate}" required>
+        </div>
+        <div class="register-form-group">
+          <label>Mot de passe :</label>
+          <input type="password" th:field="*{password}" required>
+        </div>
+        <div class="register-form-group">
+          <label>Confirmez le mot de passe :</label>
+          <input type="password-check" required>
+        </div>
+      </div>
+    </div>
+    <button type="submit" id="register-button">S'inscrire</button>
+    <p class="small-text"><a th:href="@{/login}">Déjà un compte ? Se connecter</a></p>
+  </form>
+</div>
 </body>
 </html>
