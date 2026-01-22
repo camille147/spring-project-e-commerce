@@ -1,27 +1,29 @@
 version: '3.8'
 
 services:
-  app-vue:
-    build: .
-    ports:
-      - "${PORT_VUE}:8080"
-    env_file: .env
-    environment:
-      - SERVER_PORT=8080
-    # On lance le JAR en pointant explicitement vers la classe de la VUE
-    command: java -cp app.jar -Dloader.main=org.example.springecommerce.SpringECommerceApplication org.springframework.boot.loader.launch.JarLauncher
-    volumes:
-      - h2_data:/app/data
-
   app-api:
     build: .
     ports:
-      - "${PORT_API}:8081"
+      - "8081:8081" # Explicitement 8081
     env_file: .env
     environment:
       - SERVER_PORT=8081
-    # On lance le JAR en pointant explicitement vers la classe de l'API
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/techzonedb;AUTO_SERVER=TRUE
     command: java -cp app.jar -Dloader.main=org.example.springecommerceapi.SpringECommerceApiApplication org.springframework.boot.loader.launch.JarLauncher
+    volumes:
+      - h2_data:/app/data
+
+  app-vue:
+    build: .
+    ports:
+      - "8080:8080" # Explicitement 8080
+    env_file: .env
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/techzonedb;AUTO_SERVER=TRUE
+    depends_on:
+      - app-api
+    command: java -cp app.jar -Dloader.main=org.example.springecommerce.SpringECommerceApplication org.springframework.boot.loader.launch.JarLauncher
     volumes:
       - h2_data:/app/data
 

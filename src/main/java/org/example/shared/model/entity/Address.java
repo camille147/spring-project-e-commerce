@@ -38,5 +38,9 @@ public class Address {
     @NotBlank(message = "The address must have a state")
     private Boolean isActive = true;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
 
 }

@@ -22,6 +22,7 @@ public class ProductPromotion {
     @Column(nullable = false)
     private LocalDateTime endDate;
 
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

@@ -11,6 +11,7 @@ import org.example.shared.model.enumeration.UserRole;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -52,11 +53,10 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.of(LocalDate.now(), LocalTime.now());
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Set<Order> orders;
-//
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Set<Address> addresses;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Order> orders;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Address> addresses;
 
 }

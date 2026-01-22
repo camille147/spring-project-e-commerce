@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "picture")
@@ -27,4 +29,7 @@ public class Picture {
     @Column(nullable = false)
     @NotBlank(message = "The picture type is mandatory")
     private Boolean isActive;
+
+    @ManyToMany(mappedBy = "gallery")
+    private List<Product> product;
 }
