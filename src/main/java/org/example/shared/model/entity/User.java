@@ -49,9 +49,11 @@ public class User {
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
-
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.of(LocalDate.now(), LocalTime.now());
+
+    @Column
+    private Boolean isActivated = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Order> orders;

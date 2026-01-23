@@ -34,14 +34,5 @@ public class AuthController {
         return "redirect:/login?registered=true";
     }
 
-    @GetMapping("/admin/dashboard")
-    public String adminHome() {
-        return "admin/dashboard";
-    }
-
-    @GetMapping("/home")
-    public String home() {
-        return "home";
-    }
 
 }

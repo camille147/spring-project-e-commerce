@@ -28,15 +28,11 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    @NotBlank(message = "The product price is mandatory")
     private Double price;
 
     @Column(nullable = false)
-    @NotBlank(message = "The product quantity is mandatory")
     private Integer quantity;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The product status is mandatory")
     private Boolean isEnabled = true;
 
     @Column(nullable = false)
@@ -51,13 +47,16 @@ public class Product {
     @NotBlank(message = "The reference product is mandatory")
     private String reference;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "default_picture_id")
     private Picture defaultPicture;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductPromotion> productPromotions;
 
     @ManyToMany
     @JoinTable(
