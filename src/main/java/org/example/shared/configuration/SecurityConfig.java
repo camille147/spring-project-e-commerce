@@ -1,5 +1,6 @@
 package org.example.shared.configuration;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -20,7 +21,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-
     //API REST (Stateless avec JWT)
     @Bean
     @Order(1)
@@ -35,20 +35,22 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // pas de Cookies
                 );
-        // plus tard -> .addFilterBefore(jwtFilter, ...)
 
         return http.build();
     }
 
-    //VUE THYMELEAF (Stateful avec Cookies/Sessions)
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**").permitAll()
-                        .requestMatchers("/h2-console/**", "/static/**", "/login", "/home", "/register").permitAll()
+                        .requestMatchers("/h2-console/**", "/register", "/home", "/user/navbar", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**", "/error/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        })
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
