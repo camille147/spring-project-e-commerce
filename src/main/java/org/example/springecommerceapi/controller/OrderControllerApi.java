@@ -13,15 +13,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api")
 public class OrderControllerApi {
 
     private final OrderRepository repository;
@@ -36,41 +39,75 @@ public class OrderControllerApi {
         this.orderLineRepository = orderLineRepository;
     }
 
-    @GetMapping
+    @GetMapping("/admin/orders")
     public List<OrderDto> findAll() {
         return repository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/orders/{id}")
     public ResponseEntity<OrderDto> findById(@PathVariable Long id) {
         Optional<Order> o = repository.findById(id);
-        return o.map(ord -> ResponseEntity.ok(toDto(ord))).orElseGet(() -> ResponseEntity.notFound().build());
+        if (o.isEmpty()) return ResponseEntity.notFound().build();
+        Order order = o.get();
+
+        if (isNotOwnerNorAdmin(order.getUser())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(toDto(order));
     }
 
-    @PostMapping
-    public ResponseEntity<OrderDto> create(@Valid @RequestBody OrderDto dto) {
+    @PostMapping("/orders")
+    public ResponseEntity<?> create(@Valid @RequestBody OrderDto dto) {
+        User current = getAuthenticatedUser();
+        if (current == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        User targetUser = current;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(g -> "ROLE_ADMIN".equals(g.getAuthority()));
+        if (isAdmin && dto.getUserId() != null) {
+            Optional<User> maybeUser = userRepository.findById(dto.getUserId());
+            if (maybeUser.isEmpty()) return ResponseEntity.badRequest().body("Invalid userId");
+            targetUser = maybeUser.get();
+        }
+
+        if (dto.getAddressId() != null) {
+            Optional<Address> maybeAddress = addressRepository.findById(dto.getAddressId());
+            if (maybeAddress.isEmpty()) return ResponseEntity.badRequest().body("Invalid addressId");
+            Address addr = maybeAddress.get();
+            if (!isAdmin && (addr.getUser() == null || !addr.getUser().getId().equals(targetUser.getId()))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Address does not belong to the user");
+            }
+        }
+
         Order entity = toEntity(dto);
+        entity.setUser(targetUser);
         Order saved = repository.save(entity);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(saved.getId()).toUri();
         return ResponseEntity.created(location).body(toDto(saved));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderDto> update(@PathVariable Long id, @Valid @RequestBody OrderDto dto) {
-        if (!repository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        Order entity = toEntity(dto);
-        entity.setId(id);
-        Order updated = repository.save(entity);
-        return ResponseEntity.ok(toDto(updated));
+    @PatchMapping("/admin/orders/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+        Optional<Order> maybeOrder = repository.findById(id);
+        if (maybeOrder.isEmpty()) return ResponseEntity.notFound().build();
+        Order order = maybeOrder.get();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream().anyMatch(g -> "ROLE_ADMIN".equals(g.getAuthority()));
+        if (!isAdmin) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        if (!payload.containsKey("status")) return ResponseEntity.badRequest().body("Payload must contain 'status' integer");
+        Integer status = payload.get("status");
+        if (status == null) return ResponseEntity.badRequest().body("Invalid status");
+
+        order.setStatus(status);
+        Order saved = repository.save(order);
+        return ResponseEntity.ok(toDto(saved));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
-        repository.deleteById(id);
-    }
 
     private OrderDto toDto(Order o) {
         List<Long> lineIds = null;
@@ -99,5 +136,24 @@ public class OrderControllerApi {
             o.setOrderLines(lines);
         }
         return o;
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) return null;
+        String email = auth.getName();
+        return userRepository.findByEmail(email).orElse(null);
+    }
+
+    private boolean isOwnerOrAdmin(User owner) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) return false;
+        String email = auth.getName();
+        if (owner == null) return false;
+        return email.equals(owner.getEmail());
+    }
+
+    private boolean isNotOwnerNorAdmin(User owner) {
+        return !isOwnerOrAdmin(owner);
     }
 }

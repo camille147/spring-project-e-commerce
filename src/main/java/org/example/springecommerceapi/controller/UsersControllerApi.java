@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -17,7 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UsersControllerApi {
 
     private final UserRepository userRepository;
@@ -28,21 +30,21 @@ public class UsersControllerApi {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping
+    @GetMapping("/admin/users")
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/admin/get={id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
         return user.map(u -> ResponseEntity.ok(toDto(u)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/users")
     public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
         User toSave = toEntity(userDto);
 
@@ -62,7 +64,7 @@ public class UsersControllerApi {
         return ResponseEntity.created(location).body(toDto(saved));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/{id}")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
         Optional<User> existing = userRepository.findById(id);
         if (existing.isEmpty()) {
@@ -83,15 +85,67 @@ public class UsersControllerApi {
         return ResponseEntity.ok(toDto(updated));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public void deleteUser(@PathVariable Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-        } else {
-            throw new UserNotFoundException(id);
+
+    @GetMapping("/user/profile")
+    public ResponseEntity<UserDto> getMyProfile() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String email = auth.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(toDto(userOpt.get()));
     }
+
+    @PutMapping("/user/profile")
+    public ResponseEntity<?> updateMyProfile(@Valid @RequestBody UserDto userDto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = auth.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOpt.get();
+
+        String newEmail = userDto.getEmail();
+        if (newEmail != null && !newEmail.equals(user.getEmail())) {
+            if (userRepository.existsByEmail(newEmail)) {
+                return ResponseEntity.badRequest().body("Error: Email is already taken!");
+            }
+            user.setEmail(newEmail);
+        }
+
+        if (userDto.getFirstName() != null) user.setFirstName(userDto.getFirstName());
+        if (userDto.getLastName() != null) user.setLastName(userDto.getLastName());
+        if (userDto.getBirthDate() != null) user.setBirthDate(userDto.getBirthDate());
+
+        if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        }
+
+        User saved = userRepository.save(user);
+        return ResponseEntity.ok(toDto(saved));
+    }
+
+    @PatchMapping("/user/password/id={id}")
+    public ResponseEntity<?> changeUserPassword(@PathVariable Long id, @RequestBody String newPassword) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userOpt.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ResponseEntity.ok("Password updated successfully");
+    }
+
 
     public UserDto toDto(User u) {
         return new UserDto(u.getId(), u.getFirstName(), u.getLastName(), u.getEmail(), u.getBirthDate(), null);

@@ -43,6 +43,8 @@ public class User {
     private String firstName;
 
     @Column(nullable = false)
+    @Getter
+    @Setter
     private LocalDate birthDate;
 
     @Enumerated(EnumType.STRING)

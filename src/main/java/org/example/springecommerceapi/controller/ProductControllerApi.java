@@ -13,11 +13,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api")
 public class ProductControllerApi {
 
     private final ProductRepository repository;
@@ -28,18 +29,24 @@ public class ProductControllerApi {
         this.categoryRepository = categoryRepository;
     }
 
-    @GetMapping
+    @GetMapping("/products")
     public List<ProductDto> findAll() {
         return repository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping({"/products/search/{name}", "/products/{name}"})
+    public List<ProductDto> searchByName(@PathVariable String name) {
+        List<Product> found = repository.findByProductNameIgnoreCaseContaining(name);
+        return found.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    @GetMapping("/products/{id:\\d+}")
     public ResponseEntity<ProductDto> findById(@PathVariable Long id) {
         Optional<Product> p = repository.findById(id);
         return p.map(prod -> ResponseEntity.ok(toDto(prod))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/products")
     public ResponseEntity<ProductDto> create(@Valid @RequestBody ProductDto dto) {
         Product p = toEntity(dto);
         Product saved = repository.save(p);
@@ -47,7 +54,7 @@ public class ProductControllerApi {
         return ResponseEntity.created(location).body(toDto(saved));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/products/{id}")
     public ResponseEntity<ProductDto> update(@PathVariable Long id, @Valid @RequestBody ProductDto dto) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -58,10 +65,41 @@ public class ProductControllerApi {
         return ResponseEntity.ok(toDto(updated));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/products/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);
+    }
+
+    // New PATCH endpoint to update stock
+    @PatchMapping("/admin/products/{id}/stock")
+    public ResponseEntity<?> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
+        Optional<Product> existing = repository.findById(id);
+        if (existing.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Product p = existing.get();
+
+        if (payload.containsKey("quantity")) {
+            Integer newQty = payload.get("quantity");
+            if (newQty == null || newQty < 0) {
+                return ResponseEntity.badRequest().body("Invalid quantity");
+            }
+            p.setQuantity(newQty);
+        } else if (payload.containsKey("delta")) {
+            Integer delta = payload.get("delta");
+            if (delta == null) {
+                return ResponseEntity.badRequest().body("Invalid delta");
+            }
+            int updatedQty = (p.getQuantity() == null ? 0 : p.getQuantity()) + delta;
+            if (updatedQty < 0) updatedQty = 0;
+            p.setQuantity(updatedQty);
+        } else {
+            return ResponseEntity.badRequest().body("Payload must contain 'quantity' or 'delta'");
+        }
+
+        Product saved = repository.save(p);
+        return ResponseEntity.ok(toDto(saved));
     }
 
     private ProductDto toDto(Product p) {
