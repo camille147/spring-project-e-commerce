@@ -23,8 +23,6 @@ public class Order {
     @Size(min = 9, max = 9)
     private String orderNumber;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The order date is mandatory")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(nullable = false)
@@ -36,13 +34,14 @@ public class Order {
     private Integer status;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderLine> orderLines;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(mappedBy = "order")
-    private List<OrderLine> orderLines;
 }

@@ -21,6 +21,7 @@ public class AuthController {
     public String login(Model model) {
         return "login";
     }
+
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         model.addAttribute("user", new User());
@@ -33,9 +34,5 @@ public class AuthController {
         return "redirect:/login?registered=true";
     }
 
-    @GetMapping("/home")
-    public String home() {
-        return "home";
-    }
 
 }

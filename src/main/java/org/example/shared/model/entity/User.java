@@ -1,14 +1,17 @@
 package org.example.shared.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.shared.model.enumeration.UserRole;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -24,6 +27,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    @JsonIgnore
     @NotBlank(message = "Password is mandatory")
     @Column(nullable = false)
     private String password;
@@ -36,24 +40,25 @@ public class User {
     @NotBlank(message = "First name is mandatory")
     @Size(min = 3)
     @Column(nullable = false)
-    private String name;
+    private String firstName;
 
     @Column(nullable = false)
     private LocalDate birthDate;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(nullable = false)
-//    private UserRole role;
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserRole role = UserRole.USER;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.of(LocalDate.now(), LocalTime.now());
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Set<Order> orders;
-//
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private Set<Address> addresses;
+    @Column
+    private Boolean isActivated = true;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Address> addresses;
 
 }

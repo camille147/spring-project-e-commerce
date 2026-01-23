@@ -22,7 +22,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail()) //username=email
                 .password(user.getPassword())
-                .roles("USER") // modifier pour le role qui est enum(àfaire)
+                .roles(user.getRole().name())
                 .build();
     }
 }

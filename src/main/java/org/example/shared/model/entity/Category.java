@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Table(name = "category")
 @Data
@@ -21,4 +23,8 @@ public class Category {
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory")
+    private List<Category> subCategories;
+
 }
