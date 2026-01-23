@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/fonts/**", "/login", "/images/**", "/fonts/**", "/register").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
+                        .requestMatchers("/h2-console/**", "/register", "/home", "/user/navbar", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**", "/error/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
