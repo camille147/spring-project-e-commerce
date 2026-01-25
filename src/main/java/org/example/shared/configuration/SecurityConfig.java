@@ -48,10 +48,9 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/fonts/**", "/login", "/images/**", "/fonts/**", "/register").permitAll()
+                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
-                        .requestMatchers("/h2-console/**", "/register", "/home", "/user/navbar", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**", "/error/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -69,7 +68,11 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1)
+                );
 
         return http.build();
     }

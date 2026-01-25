@@ -18,8 +18,9 @@ public class ShopController {
     @GetMapping("/user/shop")
     public String displayShop(Model model) {
         List<Product> products = productRepository.findAll();
-        model.addAttribute("products", products);
-        return "user/shop.html";
+        model.addAttribute("product", products);
+        return "user/shop";
     }
+
 
 }
