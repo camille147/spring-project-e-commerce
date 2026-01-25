@@ -1,12 +1,11 @@
 package org.example.springecommerce.controller;
 
-import jakarta.transaction.Transactional;
+import org.example.shared.entityForm.AddressForm;
 import org.example.shared.model.entity.User;
 import org.example.shared.model.service.CustomUserDetails;
-import org.example.shared.model.service.CustomUserDetailsService;
+import org.example.shared.repository.AddressRepository;
 import org.example.shared.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -19,6 +18,9 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AddressRepository addressRepository;
+
 
     @GetMapping("/user/profile")
     public String getProfile(@AuthenticationPrincipal UserDetails principal, Model model) {
@@ -28,18 +30,30 @@ public class UserController {
         }
 
         // CustomUserDetails
+        Long userId;
         if (principal instanceof CustomUserDetails customUser) {
-            model.addAttribute("userId", customUser.getId());
-            // On peut aussi passer l'email ou le nom
-            model.addAttribute("user", customUser.getUser());
-            model.addAttribute("userEmail", customUser.getUsername());
+            userId = customUser.getId();
+        } else {
+            // Au cas où le principal ne serait pas notre CustomUserDetails
+            userId = userRepository.findByEmail(principal.getUsername())
+                    .map(User::getId)
+                    .orElse(null);
         }
-        // si c User et pas CUD -> recup id via email
-        else {
-            userRepository.findByEmail(principal.getUsername())
-                    .ifPresent(u -> model.addAttribute("userId", u.getId()));
+
+        if (userId != null) {
+            // CRUCIAL : On recharge l'utilisateur depuis le Repository
+            // pour récupérer les adresses fraîches qui viennent d'être insérées
+            userRepository.findById(userId).ifPresent(userInDb -> {
+                model.addAttribute("user", userInDb);
+                model.addAttribute("userId", userInDb.getId());
+                model.addAttribute("userEmail", userInDb.getEmail());
+            });
+
+            model.addAttribute("addressForm", new AddressForm());
         }
 
         return "user/profile";
     }
+
+
 }
