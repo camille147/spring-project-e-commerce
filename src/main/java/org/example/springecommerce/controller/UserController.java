@@ -34,15 +34,13 @@ public class UserController {
         if (principal instanceof CustomUserDetails customUser) {
             userId = customUser.getId();
         } else {
-            // Au cas où le principal ne serait pas notre CustomUserDetails
             userId = userRepository.findByEmail(principal.getUsername())
                     .map(User::getId)
                     .orElse(null);
         }
 
         if (userId != null) {
-            // CRUCIAL : On recharge l'utilisateur depuis le Repository
-            // pour récupérer les adresses fraîches qui viennent d'être insérées
+            // rechargement du user dpusi le repo -> recup des adresses
             userRepository.findById(userId).ifPresent(userInDb -> {
                 model.addAttribute("user", userInDb);
                 model.addAttribute("userId", userInDb.getId());
