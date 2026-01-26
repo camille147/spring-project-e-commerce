@@ -55,7 +55,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // Utilise ton champ isActivated pour autoriser ou non la connexion
         return user.getIsActivated() != null && user.getIsActivated();
     }
 }

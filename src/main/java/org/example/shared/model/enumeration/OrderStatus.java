@@ -18,7 +18,6 @@ public enum OrderStatus {
     public int getCode() { return code; }
     public String getLabel() { return label; }
 
-    // Méthode pour récupérer l'Enum à partir de l'int de la DB
     public static OrderStatus fromCode(int code) {
         for (OrderStatus s : values()) {
             if (s.code == code) return s;

@@ -27,7 +27,6 @@ public class AddressController {
             Model model
     ) {
         if (result.hasErrors()) {
-            // On recharge les infos nécessaires au profil pour le réaffichage
             model.addAttribute("user", currentUser.getUser());
             model.addAttribute("userId", currentUser.getId());
             return "user/profile";
