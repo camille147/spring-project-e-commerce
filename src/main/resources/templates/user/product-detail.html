@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${product.productName}">Détail Produit</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <a th:href="@{/user/shop}">← Retour à la boutique</a>
+
+    <div class="product-detail-flex">
+        <div class="image-section">
+            <img th:src="${product.defaultPicture.pictureUrl}" width="400" alt="Image produit">
+        </div>
+
+        <div class="info-section">
+            <h1 th:text="${product.productName}">Nom</h1>
+            <p class="brand">Marque : <span th:text="${product.brand}"></span></p>
+
+            <div class="price-container">
+                <div th:if="${product.isOnSale()}">
+                    <span style="text-decoration: line-through; color: #888;" th:text="${product.price} + ' €'"></span>
+                    <span style="color: red; font-weight: bold; font-size: 1.5em;"
+                          th:text="${#numbers.formatDecimal(product.getEffectivePrice(), 1, 2)} + ' €'"></span>
+                </div>
+                <div th:unless="${product.isOnSale()}">
+                    <span style="font-size: 1.5em;" th:text="${product.price} + ' €'"></span>
+                </div>
+            </div>
+
+            <div class="description">
+                <h3>Description</h3>
+                <p th:text="${product.description}"></p>
+            </div>
+
+            <p>Référence : <span th:text="${product.reference}"></span></p>
+
+            <p th:if="${product.quantity > 0}" style="color: green;">
+                En stock (<span th:text="${product.quantity}"></span> restants)
+            </p>
+            <p th:unless="${product.quantity > 0}" style="color: red;">Rupture de stock</p>
+
+            <form th:action="@{/user/cart/add}" method="post" class="cart-form">
+                <input type="hidden" name="productId" th:value="${product.id}">
+
+                <div class="quantity-selector" th:if="${product.quantity > 0}">
+                    <label for="quantity">Quantité :</label>
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" th:max="${product.quantity}">
+                </div>
+
+                <button type="submit" class="btn-primary" th:disabled="${product.quantity <= 0}">
+                    <span th:text="${product.quantity > 0 ? 'Ajouter au panier' : 'Indisponible'}"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

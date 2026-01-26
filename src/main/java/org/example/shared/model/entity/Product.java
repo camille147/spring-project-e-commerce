@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -65,4 +66,23 @@ public class Product {
             inverseJoinColumns = @JoinColumn(name = "picture_id")
     )
     private List<Picture> gallery;
+
+
+    public Double getEffectivePrice() {
+        LocalDateTime now = LocalDateTime.now();
+        // promo active  -> entre start date et end date
+        return productPromotions.stream()
+                .filter(pp -> pp.getStartDate().isBefore(now) &&
+                        (pp.getEndDate() == null || pp.getEndDate().isAfter(now)))
+                .map(pp -> this.price * (1 - pp.getPromotion().getDiscountRate() / 100))
+                .findFirst()
+                .orElse(this.price);
+    }
+
+    public boolean isOnSale() {
+        LocalDateTime now = LocalDateTime.now();
+        return productPromotions.stream()
+                .anyMatch(pp -> pp.getStartDate().isBefore(now) &&
+                        (pp.getEndDate() == null || pp.getEndDate().isAfter(now)));
+    }
 }

@@ -21,4 +21,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * Optionnel : utile pour vérifier si un email est déjà pris lors du signup.
      */
     Boolean existsByEmail(String email);
+
+
 }
