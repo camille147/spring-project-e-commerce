@@ -49,13 +49,13 @@
 
 <div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    <div th:each="p: ${products}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
+    <div th:each="p: ${product}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
         <a href="#" class="block relative flex-shrink-0">
             <img class="w-full h-64 object-contain bg-gray-50 rounded-[10px] mb-4" src="/files/apple-watch.png" alt="produit" />
         </a>
 
         <div class="flex flex-col flex-1">
-            <a th:href="@{/product/${p.id}}">
+            <a th:href="@{/user/product/{id}(id=${p.id})}">
                 <h5 class="text-lg font-semibold text-gray-800 leading-tight line-clamp-2 mb-4 font-Montserrat" th:text="${p.productName}"></h5>
             </a>
 
