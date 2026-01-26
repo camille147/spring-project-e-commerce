@@ -6,6 +6,8 @@ import org.example.shared.model.entity.Product;
 import org.example.shared.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,23 +27,41 @@ public class CartController {
                             @RequestParam("quantity") int quantity,
                             HttpSession session) {
 
-        // Récup panier depuis la session ou en créer un nouveau
+        // 1. Récupérer ou créer le panier en session
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
         if (cart == null) {
             cart = new HashMap<>();
             session.setAttribute("cart", cart);
         }
 
-        Product product = productRepository.findById(productId).orElseThrow();
+        // 2. Récupérer le produit depuis la DB
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-        // Ajout ou maj qty
+        // 3. Ajouter au panier ou mettre à jour la quantité
         if (cart.containsKey(productId)) {
-            CartItem existingItem = cart.get(productId);
-            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            CartItem item = cart.get(productId);
+            item.setQuantity(item.getQuantity() + quantity);
         } else {
             cart.put(productId, new CartItem(product, quantity));
         }
 
-        return "redirect:/user/cart/view";
+        return "redirect:/user/shop"; // Retour à la boutique après l'ajout
     }
+
+    @GetMapping
+    public String viewCart(HttpSession session, Model model) {
+        Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
+        if (cart == null) cart = new HashMap<>();
+
+        // Calcul du total général
+        double total = cart.values().stream()
+                .mapToDouble(CartItem::getSubTotal)
+                .sum();
+
+        model.addAttribute("cartItems", cart.values());
+        model.addAttribute("total", total);
+        return "user/cart";
+    }
+
 }
