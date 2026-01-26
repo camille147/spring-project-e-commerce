@@ -14,14 +14,11 @@ public class ProductPromotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "The promotion must have a name")
     @Column(nullable = false)
     private LocalDateTime startDate;
 
-    @NotBlank(message = "The promotion must have a name")
     @Column(nullable = false)
     private LocalDateTime endDate;
-
 
     @ManyToOne
     @JoinColumn(name = "product_id")

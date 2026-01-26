@@ -18,7 +18,6 @@ public class Promotion {
     @Column(nullable = false)
     private String name;
 
-    @NotBlank(message = "The promotion must have a discount rate")
     @Column(nullable = false)
     private Double discountRate;
 
