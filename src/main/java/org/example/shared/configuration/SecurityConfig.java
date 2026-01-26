@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Désactivé pour les API REST
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // seules les routes d'authentification sont publiques
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // sécurise les routes admin
                         .anyRequest().authenticated() //tout le reste requiert un Token
                 )
@@ -51,7 +52,6 @@ public class SecurityConfig {
             }
 
             try {
-                // récupère le AuthTokenFilter si présent et l'ajoute
                 if (ctx.containsBeanDefinition("org.example.springecommerceapi.security.AuthTokenFilter") ||
                         ctx.getBeanNamesForType(org.example.springecommerceapi.security.AuthTokenFilter.class).length > 0) {
                     org.example.springecommerceapi.security.AuthTokenFilter jwtFilter = ctx.getBean(org.example.springecommerceapi.security.AuthTokenFilter.class);
@@ -71,7 +71,8 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**").permitAll()
+                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**",
+                                "/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
