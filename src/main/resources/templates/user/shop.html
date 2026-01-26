@@ -49,22 +49,45 @@
 
 <div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    <div th:each="p: ${products}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
-        <a href="#" class="block relative flex-shrink-0">
-            <img class="w-full h-64 object-contain bg-gray-50 rounded-[10px] mb-4" src="/files/apple-watch.png" alt="produit" />
+    <div th:each="p: ${product}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
+        <a th:href="@{/user/product/{id}(id=${p.id})}" class="block relative flex-shrink-0">
+            <img class="w-full h-64 object-contain bg-gray-50 rounded-[10px] mb-4"
+                 th:src="${p.defaultPicture != null ? p.defaultPicture.pictureUrl : '/files/placeholder.png'}"
+                 alt="Image du produit" />
         </a>
 
         <div class="flex flex-col flex-1">
-            <a th:href="@{/product/${p.id}}">
+            <a th:href="@{/user/product/{id}(id=${p.id})}">
                 <h5 class="text-lg font-semibold text-gray-800 leading-tight line-clamp-2 mb-4 font-Montserrat" th:text="${p.productName}"></h5>
             </a>
-
             <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                 <span class="text-2xl font-bold text-gray-900 font-Montserrat" th:text="${p.price}"></span>
-                <button type="button" class="inline-flex items-center text-white bg-[#1F1F1F] hover:bg-gray-700 transition-colors font-medium rounded-[10px] text-sm px-4 py-2.5 focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                    Ajouter
-                </button>
+                <div class="price-container">
+                    <div th:if="${p.isOnSale()}">
+                        <span style="text-decoration: line-through; color: #888;" th:text="${p.price} + ' €'"></span>
+                        <span style="color: red; font-weight: bold; font-size: 1.5em;"
+                              th:text="${#numbers.formatDecimal(p.getEffectivePrice(), 1, 2)} + ' €'"></span>
+                    </div>
+                    <div th:unless="${p.isOnSale()}">
+                        <span style="font-size: 1.5em;" th:text="${p.price} + ' €'"></span>
+                    </div>
+                </div>
+                <form th:action="@{/user/cart/add}" method="post">
+                    <input type="hidden" name="productId" th:value="${p.id}">
+
+                    <input type="hidden" name="quantity" value="1">
+
+                    <button type="submit"
+                            th:disabled="${p.quantity <= 0}"
+                            class="inline-flex items-center text-white bg-[#1F1F1F] hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium rounded-[10px] text-sm px-4 py-2.5 focus:outline-none">
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+
+                        <span th:text="${p.quantity > 0 ? 'Ajouter' : 'Épuisé'}"></span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -72,7 +95,7 @@
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="flex flex-col items-center space-y-4 pb-10 mt-8">
     <ul class="flex -space-x-px text-sm">
-
+        <h1>nfrjed</h1>
         <li>
             <a th:href="@{/user/shop(page=${currentPage - 1})}"
                th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
