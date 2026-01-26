@@ -2,8 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Mon Profil</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
+<div th:replace="~{user/navbar :: navbar-user}"></div>
 <h1>Bienvenue, <span th:text="${user?.firstName}">Prénom</span> !</h1>
 
 <div class="info-card">
