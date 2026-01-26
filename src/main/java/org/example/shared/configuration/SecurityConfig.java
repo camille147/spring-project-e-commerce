@@ -31,13 +31,36 @@ public class SecurityConfig {
                 .securityMatcher("/api/**") //config QUE pour URLs /api/...
                 .csrf(csrf -> csrf.disable()) // Désactivé pour les API REST
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/**").permitAll() // Login API public
+                        .requestMatchers("/api/auth/**").permitAll() // seules les routes d'authentification sont publiques
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN") // sécurise les routes admin
                         .anyRequest().authenticated() //tout le reste requiert un Token
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS) //pas de cookies
                 );
-        // plus tard -> .addFilterBefore(jwtFilter, ...)
+
+        org.springframework.context.ApplicationContext ctx = http.getSharedObject(org.springframework.context.ApplicationContext.class);
+        if (ctx != null) {
+            try {
+                if (ctx.containsBeanDefinition("org.example.springecommerceapi.security.AuthEntryPointJwt") ||
+                        ctx.getBeanNamesForType(org.example.springecommerceapi.security.AuthEntryPointJwt.class).length > 0) {
+                    org.example.springecommerceapi.security.AuthEntryPointJwt entryPoint = ctx.getBean(org.example.springecommerceapi.security.AuthEntryPointJwt.class);
+                    http.exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint));
+                }
+            } catch (Exception ignored) {
+            }
+
+            try {
+                // récupère le AuthTokenFilter si présent et l'ajoute
+                if (ctx.containsBeanDefinition("org.example.springecommerceapi.security.AuthTokenFilter") ||
+                        ctx.getBeanNamesForType(org.example.springecommerceapi.security.AuthTokenFilter.class).length > 0) {
+                    org.example.springecommerceapi.security.AuthTokenFilter jwtFilter = ctx.getBean(org.example.springecommerceapi.security.AuthTokenFilter.class);
+                    http.addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+                }
+            } catch (Exception ignored) {
+
+            }
+        }
 
         return http.build();
     }
@@ -48,7 +71,7 @@ public class SecurityConfig {
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**").permitAll()
+                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**", "/logout").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()

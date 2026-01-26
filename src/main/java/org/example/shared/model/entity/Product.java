@@ -56,7 +56,7 @@ public class Product {
     @JoinColumn(name = "default_picture_id")
     private Picture defaultPicture;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     private List<ProductPromotion> productPromotions;
 
     @ManyToMany

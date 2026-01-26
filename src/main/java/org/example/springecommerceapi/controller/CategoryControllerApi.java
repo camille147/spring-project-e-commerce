@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/api")
 public class CategoryControllerApi {
 
     private final CategoryRepository repository;
@@ -24,18 +24,18 @@ public class CategoryControllerApi {
         this.repository = repository;
     }
 
-    @GetMapping
+    @GetMapping("/category")
     public List<CategoryDto> findAll() {
         return repository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/category/{id}")
     public ResponseEntity<CategoryDto> findById(@PathVariable Long id) {
         Optional<Category> c = repository.findById(id);
         return c.map(cat -> ResponseEntity.ok(toDto(cat))).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/category")
     public ResponseEntity<CategoryDto> create(@Valid @RequestBody CategoryDto dto) {
         Category cat = toEntity(dto);
         Category saved = repository.save(cat);
@@ -43,7 +43,7 @@ public class CategoryControllerApi {
         return ResponseEntity.created(location).body(toDto(saved));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/category/{id}")
     public ResponseEntity<CategoryDto> update(@PathVariable Long id, @Valid @RequestBody CategoryDto dto) {
         if (!repository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -54,7 +54,7 @@ public class CategoryControllerApi {
         return ResponseEntity.ok(toDto(updated));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/category/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         repository.deleteById(id);

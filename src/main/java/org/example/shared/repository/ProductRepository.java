@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p " +
@@ -15,4 +17,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "LEFT JOIN FETCH pp.promotion prom " +
             "WHERE p.id = :id AND (pp.startDate <= CURRENT_TIMESTAMP AND (pp.endDate IS NULL OR pp.endDate >= CURRENT_TIMESTAMP))")
     Optional<Product> findProductWithActivePromotions(@Param("id") Long id);
+    List<Product> findByProductNameIgnoreCaseContaining(String name);
 }
