@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mon Profil</title>
+</head>
+<body>
+<h1>Bienvenue, <span th:text="${user?.firstName}">Prénom</span> !</h1>
+
+<div class="info-card">
+    <p><strong>Email :</strong> <span th:text="${userEmail}">email@test.com</span></p>
+    <p><strong>Nom :</strong> <span th:text="${user?.lastName}">NOM</span></p>
+    <p><strong>ID Client :</strong> <span th:text="${userId}">0</span></p>
+</div>
+
+<h3>Ajouter une nouvelle adresse</h3>
+<form th:action="@{/user/address/add}" th:object="${addressForm}" method="post">
+
+    <div>
+        <label>Rue :</label>
+        <input type="text" th:field="*{street}" placeholder="10 rue de la Paix" />
+        <p th:if="${#fields.hasErrors('street')}" th:errors="*{street}" style="color:red;"></p>
+    </div>
+
+    <div>
+        <label>Ville :</label>
+        <input type="text" th:field="*{city}" />
+    </div>
+
+    <div>
+        <label>Code Postal :</label>
+        <input type="text" th:field="*{zipCode}" />
+        <p th:if="${#fields.hasErrors('zipCode')}"
+           th:errors="*{zipCode}"
+           style="color:red; font-size: 0.8em;"></p>
+    </div>
+
+    <div>
+        <label>Pays :</label>
+        <input type="text" th:field="*{country}" />
+    </div>
+
+    <button type="submit">Enregistrer l'adresse</button>
+</form>
+
+<h2>Mes Adresses</h2>
+<ul>
+    <li th:each="addr : ${user?.addresses}"
+        th:text="${addr.street} + ' ' + ${addr.city}">
+        123 Rue de Test, Paris
+    </li>
+</ul>
+</body>
+</html>

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,15 +29,11 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    @NotBlank(message = "The product price is mandatory")
     private Double price;
 
     @Column(nullable = false)
-    @NotBlank(message = "The product quantity is mandatory")
     private Integer quantity;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The product status is mandatory")
     private Boolean isEnabled = true;
 
     @Column(nullable = false)
@@ -51,13 +48,16 @@ public class Product {
     @NotBlank(message = "The reference product is mandatory")
     private String reference;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "default_picture_id")
     private Picture defaultPicture;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductPromotion> productPromotions;
 
     @ManyToMany
     @JoinTable(
@@ -66,4 +66,23 @@ public class Product {
             inverseJoinColumns = @JoinColumn(name = "picture_id")
     )
     private List<Picture> gallery;
+
+
+    public Double getEffectivePrice() {
+        LocalDateTime now = LocalDateTime.now();
+        // promo active  -> entre start date et end date
+        return productPromotions.stream()
+                .filter(pp -> pp.getStartDate().isBefore(now) &&
+                        (pp.getEndDate() == null || pp.getEndDate().isAfter(now)))
+                .map(pp -> this.price * (1 - pp.getPromotion().getDiscountRate() / 100))
+                .findFirst()
+                .orElse(this.price);
+    }
+
+    public boolean isOnSale() {
+        LocalDateTime now = LocalDateTime.now();
+        return productPromotions.stream()
+                .anyMatch(pp -> pp.getStartDate().isBefore(now) &&
+                        (pp.getEndDate() == null || pp.getEndDate().isAfter(now)));
+    }
 }

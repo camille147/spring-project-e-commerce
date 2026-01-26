@@ -65,35 +65,40 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    //VUE THYMELEAF (Stateful avec Cookies/Sessions)
-//    @Bean
-//    @Order(2)
-//    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
-//        http
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/h2-console/**", "/static/**", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/files/**", "/register").permitAll()
-//                        .requestMatchers("/admin/**").hasRole("ADMIN")
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .usernameParameter("email")
-//                        .loginProcessingUrl("/perform_login")
-//                        .successHandler(roleBasedSuccessHandler())
-//                        .failureUrl("/login?error=true")
-//                        .permitAll()
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/login?logout=true")
-//                        .invalidateHttpSession(true)
-//                        .deleteCookies("JSESSIONID")
-//                )
-//                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-//                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
-//
-//        return http.build();
-//    }
+    //VUE THYMELEAF (Stateful avec Cookies/Sessions)
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**", "/static/**","/css/**", "/files/**", "/js/**", "/login", "/images/**", "/fonts/**", "/register", "/user/navbar", "/error/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/**").hasRole("USER")
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .usernameParameter("email")
+                        .loginProcessingUrl("/perform_login")
+                        .successHandler(roleBasedSuccessHandler())
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                        .maximumSessions(1)
+                );
+
+        return http.build();
+    }
 
     // Handler pour rediriger selon le rôle
     @Bean
@@ -106,7 +111,7 @@ public class SecurityConfig {
                     return;
                 }
             }
-            response.sendRedirect("/home");
+            response.sendRedirect("user/shop");
         };
     }
 

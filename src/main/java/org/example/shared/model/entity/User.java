@@ -51,14 +51,16 @@ public class User {
     @Column(nullable = false)
     private UserRole role = UserRole.USER;
 
-
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.of(LocalDate.now(), LocalTime.now());
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Column
+    private Boolean isActivated = true;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Order> orders;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Address> addresses;
 
 }

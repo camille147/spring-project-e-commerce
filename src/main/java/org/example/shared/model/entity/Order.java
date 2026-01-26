@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.example.shared.model.enumeration.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,8 +31,7 @@ public class Order {
     private Double total;
 
     @Column(nullable = false)
-    @NotBlank(message = "The order status is mandatory")
-    private Integer status;
+    private int status = 0; // par défaut PENDING
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -43,5 +43,9 @@ public class Order {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
+
+    public String getStatusLabel() {
+        return OrderStatus.fromCode(this.status).getLabel();
+    }
 
 }

@@ -34,8 +34,6 @@ public class Address {
     @Size(min = 3)
     private String country;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The address must have a state")
     private Boolean isActive = true;
 
     @ManyToOne

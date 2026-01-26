@@ -26,8 +26,6 @@ public class Picture {
     @Size(min = 10)
     private String pictureUrl;
 
-    @Column(nullable = false)
-    @NotBlank(message = "The picture type is mandatory")
     private Boolean isActive;
 
     @ManyToMany(mappedBy = "gallery")

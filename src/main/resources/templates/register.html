@@ -7,34 +7,40 @@
 <body id="register-body">
 <div class="big-box">
   <img id="register-logo" th:src="@{/files/logo.png}" width="150" height="150" alt="Logo" />
-  <form th:action="@{/register}" th:object="${user}" method="post" id="register-form">
+  <form th:action="@{/register}" th:object="${registerForm}" method="post" id="register-form">
     <div id="register-inputs">
       <div>
         <div class="register-form-group">
-          <label>Prénom :</label>
-          <input type="text" th:field="*{firstName}" required>
-        </div>
-        <div class="register-form-group">
           <label>Nom :</label>
           <input type="text" th:field="*{lastName}" required>
+          <p th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" style="color:red;"></p>
+        </div>
+        <div class="register-form-group">
+          <label>Prénom :</label>
+          <input type="text" th:field="*{firstName}" required>
+          <p th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" style="color:red;"></p>
         </div>
         <div class="register-form-group">
           <label>Email :</label>
           <input type="email" th:field="*{email}" required>
+          <p th:if="${#fields.hasErrors('email')}" th:errors="*{email}" style="color:red;"></p>
         </div>
       </div>
       <div>
         <div class="register-form-group">
           <label>Date de naissance :</label>
           <input type="date" th:field="*{birthDate}" required>
+          <p th:if="${#fields.hasErrors('birthDate')}" th:errors="*{birthDate}" style="color:red;"></p>
         </div>
         <div class="register-form-group">
           <label>Mot de passe :</label>
           <input type="password" th:field="*{password}" required>
+          <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" style="color:red;"></p>
         </div>
         <div class="register-form-group">
           <label>Confirmez le mot de passe :</label>
-          <input type="password-check" required>
+          <input type="password" th:field="*{confirmPassword}" required>
+          <p th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}" style="color:red;"></p>
         </div>
       </div>
     </div>
