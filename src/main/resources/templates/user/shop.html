@@ -95,7 +95,6 @@
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="flex flex-col items-center space-y-4 pb-10 mt-8">
     <ul class="flex -space-x-px text-sm">
-        <h1>nfrjed</h1>
         <li>
             <a th:href="@{/user/shop(page=${currentPage - 1})}"
                th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
