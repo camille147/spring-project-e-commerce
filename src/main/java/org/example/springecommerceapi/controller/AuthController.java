@@ -62,7 +62,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
+    @PostMapping("/signin")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         if (userRepository.existsByEmail(signupRequest.getEmail())) {
             return ResponseEntity.badRequest().body("Error: Email is already taken!");
@@ -74,7 +74,6 @@ public class AuthController {
         user.setLastName(signupRequest.getLastName());
         user.setPassword(encoder.encode(signupRequest.getPassword()));
         user.setBirthDate(signupRequest.getBirthDate());
-        user.setCreatedAt(signupRequest.getCreatedAt());
 
         userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
