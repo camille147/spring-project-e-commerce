@@ -1,7 +1,9 @@
 package org.example.shared.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -18,7 +20,8 @@ public class Promotion {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @NotNull(message = "Le taux de remise est obligatoire")
+    @DecimalMin(value = "0.0", inclusive = false, message = "La remise doit être supérieure à 0")
     private Double discountRate;
 
 }

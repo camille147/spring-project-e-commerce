@@ -2,6 +2,7 @@ package org.example.shared.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -13,11 +14,11 @@ public class OrderLine {
     private Long id;
 
     @Column(nullable = false)
-    @NotBlank(message = "The quantity is mandatory")
+    @NotNull(message = "The price is mandatory")
     private Integer quantity;
 
     @Column(nullable = false)
-    @NotBlank(message = "The price is mandatory")
+    @NotNull(message = "The price is mandatory")
     private Double price;
 
     @ManyToOne

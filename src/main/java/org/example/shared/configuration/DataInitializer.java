@@ -2,90 +2,113 @@ package org.example.shared.configuration;
 
 import com.github.javafaker.Faker;
 import org.example.shared.model.entity.*;
+import org.example.shared.model.enumeration.UserRole;
 import org.example.shared.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.ZoneId;
+import java.util.Locale;
 
 @Component
-class DataInitializer implements CommandLineRunner {
+public class DataInitializer implements CommandLineRunner {
 
+    @Autowired private UserRepository userRepository;
     @Autowired private ProductRepository productRepository;
     @Autowired private CategoryRepository categoryRepository;
     @Autowired private PictureRepository pictureRepository;
-    @Autowired private PromotionRepository promotionRepository;
-    @Autowired private ProductPromotionRepository productPromotionRepository;
-    @Autowired private ProductPictureRepository productPictureRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private AddressRepository addressRepository;
+    @Autowired private OrderLineRepository orderLineRepository;
+    @Autowired private OrderRepository orderRepository;
 
     @Override
-    @Transactional // Important pour les liaisons complexes
     public void run(String... args) throws Exception {
         if (productRepository.count() > 0) return;
 
-        Faker faker = new Faker();
+        Faker faker = new Faker(new Locale("fr"));
 
-        // 1. Création d'une Catégorie
-        Category tech = new Category();
-        tech.setName("Électronique");
-        categoryRepository.save(tech);
+        try {
+            Category tech = new Category();
+            tech.setName("High-Tech");
+            tech = categoryRepository.save(tech);
 
-        // 2. Création d'une Promotion (-30%)
-        Promotion winterSale = new Promotion();
-        winterSale.setName("Soldes d'Hiver");
-        winterSale.setDiscountRate(30.0);
-        promotionRepository.save(winterSale);
+            Picture img = new Picture();
+            img.setName("Macbook Pro");
+            img.setPictureUrl("https://images.unsplash.com/photo-1517336712468-0776482cb48f");
+            img.setIsActive(true);
+            img = pictureRepository.save(img);
 
-        // 3. Création d'un pool d'images génériques pour la galerie
-        List<Picture> poolPictures = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
-            Picture pic = new Picture();
-            pic.setName("Gallery Pic " + i);
-            pic.setPictureUrl("https://picsum.photos/seed/" + i + "/800/600");
-            pic.setIsActive(true);
-            poolPictures.add(pictureRepository.save(pic));
-        }
+            for (int i = 0; i < 25; i++) {
+                Product p = new Product();
+                p.setProductName(faker.commerce().productName() + " " + i);
+                p.setDescription(faker.lorem().sentence(5));
+                p.setBrand(faker.company().name());
+                p.setColor(faker.color().name());
+                p.setReference("REF" + faker.number().digits(6));
+                p.setPrice(faker.number().randomDouble(2, 100, 2000));
+                p.setQuantity(faker.number().numberBetween(1, 100));
+                p.setIsEnabled(true);
+                p.setCategory(tech);
+                p.setDefaultPicture(img);
+                p = productRepository.save(p);
 
-        // 4. Génération de Produits
-        for (int i = 0; i < 20; i++) {
-            Product p = new Product();
-            // Ajout d'un suffixe aléatoire pour garantir l'unicité du nom (contrainte UK)
-            p.setProductName(faker.commerce().productName() + " " + faker.random().hex(4));
-            p.setBrand(faker.company().name());
-            p.setColor(faker.color().name());
-            p.setDescription(faker.lorem().paragraph());
-            p.setPrice(faker.number().randomDouble(2, 50, 1500));
-            p.setQuantity(faker.number().numberBetween(0, 100));
-            p.setReference("REF-" + faker.random().hex(8).toUpperCase());
-            p.setIsEnabled(true);
-            p.setCategory(tech);
-            p.setDefaultPicture(poolPictures.get(0)); // Image principale
+                User u = new User();
+                u.setEmail(faker.internet().emailAddress() + i);
+                u.setPassword(passwordEncoder.encode("password"));
+                u.setFirstName(faker.name().firstName());
+                u.setLastName(faker.name().lastName());
+                u.setRole(UserRole.USER);
+                u.setIsActivated(true);
+                u.setCreatedAt(LocalDateTime.now());
+                u.setBirthDate(faker.date().birthday(18, 60).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                u = userRepository.save(u);
 
-            productRepository.save(p);
+                Address a = new Address();
+                a.setStreet(faker.address().streetAddress());
+                a.setCity(faker.address().city());
+                a.setZipCode(faker.number().digits(5));
+                a.setCountry("France");
+                a.setUser(u);
+                a = addressRepository.save(a);
 
-            // A. Ajouter des images à la galerie (Table ProductPicture)
-            for (int j = 1; j < 3; j++) {
-                ProductPicture ppic = new ProductPicture();
-                ppic.setProduct(p);
-                ppic.setPicture(poolPictures.get(faker.number().numberBetween(0, 5)));
-                productPictureRepository.save(ppic);
+                Order o = new Order();
+                o.setOrderNumber(faker.number().digits(9));
+                o.setTotal(p.getPrice());
+                o.setStatus(0);
+                o.setUser(u);
+                o.setAddress(a);
+                o.setCreatedAt(LocalDateTime.now());
+                o = orderRepository.save(o);
+
+                OrderLine ol = new OrderLine();
+                ol.setOrder(o);
+                ol.setProduct(p);
+                ol.setQuantity(1);
+                ol.setPrice(p.getPrice());
+                orderLineRepository.save(ol);
             }
 
-            // B. Appliquer la promo à 1 produit sur 2 (Table ProductPromotion)
-            if (i % 2 == 0) {
-                ProductPromotion pp = new ProductPromotion();
-                pp.setProduct(p);
-                pp.setPromotion(winterSale);
-                pp.setStartDate(LocalDateTime.now().minusDays(1)); // Déjà commencée
-                pp.setEndDate(LocalDateTime.now().plusMonths(1));   // Finit dans un mois
-                productPromotionRepository.save(pp);
-            }
-        }
+            User admin = new User();
+            admin.setRole(UserRole.ADMIN);
+            admin.setEmail("admin@admin.fr");
+            admin.setPassword(passwordEncoder.encode("admin"));
+            admin.setFirstName("Admin");
+            admin.setLastName("Admin");
+            admin.setBirthDate(faker.date().birthday(25, 50).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            admin.setCreatedAt(LocalDateTime.now());
+            admin.setIsActivated(true);
+            userRepository.save(admin);
 
-        System.out.println(">> Fake Data (Produits, Galeries, Promos) générée !");
+            System.out.println(">> Fake Data générée avec succès !");
+
+        } catch (Exception e) {
+            System.err.println(">> ERREUR INITIALISATION : " + e.getMessage());
+            if (e.getCause() != null) System.err.println("CAUSE : " + e.getCause().getMessage());
+        }
     }
 }
