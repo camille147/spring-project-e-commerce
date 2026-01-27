@@ -129,6 +129,7 @@ public class UsersControllerApi {
         if (userDto.getPassword() != null && !userDto.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         }
+            userDto.setIsActivated(true);
 
         User saved = userRepository.save(user);
         return ResponseEntity.ok(toDto(saved));
@@ -148,7 +149,7 @@ public class UsersControllerApi {
 
 
     public UserDto toDto(User u) {
-        return new UserDto(u.getId(), u.getFirstName(), u.getLastName(), u.getEmail(), u.getBirthDate(), null);
+        return new UserDto(u.getId(), u.getFirstName(), u.getLastName(), u.getEmail(), u.getBirthDate(), null, u.getIsActivated());
     }
 
     public User toEntity(UserDto dto) {
@@ -157,6 +158,7 @@ public class UsersControllerApi {
         u.setLastName(dto.getLastName());
         u.setEmail(dto.getEmail());
         u.setBirthDate(dto.getBirthDate());
+        u.setIsActivated(dto.getIsActivated());
         return u;
     }
 
