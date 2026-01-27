@@ -27,18 +27,15 @@ public class CartController {
                             @RequestParam("quantity") int quantity,
                             HttpSession session) {
 
-        // 1. Récupérer ou créer le panier en session
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
         if (cart == null) {
             cart = new HashMap<>();
             session.setAttribute("cart", cart);
         }
 
-        // 2. Récupérer le produit depuis la DB
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-        // 3. Ajouter au panier ou mettre à jour la quantité
         if (cart.containsKey(productId)) {
             CartItem item = cart.get(productId);
             item.setQuantity(item.getQuantity() + quantity);
@@ -46,7 +43,7 @@ public class CartController {
             cart.put(productId, new CartItem(product, quantity));
         }
 
-        return "redirect:/user/shop"; // Retour à la boutique après l'ajout
+        return "redirect:/user/shop";
     }
 
     @GetMapping
@@ -54,7 +51,6 @@ public class CartController {
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
         if (cart == null) cart = new HashMap<>();
 
-        // Calcul du total général
         double total = cart.values().stream()
                 .mapToDouble(CartItem::getSubTotal)
                 .sum();
