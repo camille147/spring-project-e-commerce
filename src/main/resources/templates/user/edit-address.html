@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Modifier l'adresse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen">
+
+<div class="max-w-md w-full bg-white p-8 rounded-xl shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-gray-800">Modifier l'adresse</h1>
+        <a th:href="@{/user/profile}" class="text-sm text-gray-500 hover:underline">Annuler</a>
+    </div>
+
+    <form th:action="@{/user/address/update}" th:object="${addressForm}" method="post" class="space-y-4">
+        <input type="hidden" th:field="*{id}">
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Rue</label>
+            <input type="text" th:field="*{street}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-black focus:border-black" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Code Postal</label>
+                <input type="text" th:field="*{zipCode}" class="w-full border border-gray-300 rounded-lg p-2.5" required>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Ville</label>
+                <input type="text" th:field="*{city}" class="w-full border border-gray-300 rounded-lg p-2.5" required>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Pays</label>
+            <input type="text" th:field="*{country}" class="w-full border border-gray-300 rounded-lg p-2.5" required>
+        </div>
+
+        <button type="submit" class="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-md">
+            Enregistrer les modifications
+        </button>
+    </form>
+</div>
+
+</body>
+</html>
