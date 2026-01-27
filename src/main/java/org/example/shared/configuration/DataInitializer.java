@@ -23,69 +23,74 @@ class DataInitializer implements CommandLineRunner {
     @Autowired private ProductPictureRepository productPictureRepository;
 
     @Override
-    @Transactional // Important pour les liaisons complexes
+    @Transactional
     public void run(String... args) throws Exception {
         if (productRepository.count() > 0) return;
 
         Faker faker = new Faker();
 
-        // 1. Création d'une Catégorie
-        Category tech = new Category();
-        tech.setName("Électronique");
-        categoryRepository.save(tech);
+        // 1. Liste de couleurs cohérentes pour ton menu de filtre
+        List<String> colors = List.of("Noir", "Blanc", "Argent", "Bleu", "Rouge", "Vert");
 
-        // 2. Création d'une Promotion (-30%)
-        Promotion winterSale = new Promotion();
-        winterSale.setName("Soldes d'Hiver");
-        winterSale.setDiscountRate(30.0);
-        promotionRepository.save(winterSale);
+        // 2. Création des Catégories
+        Category smartphone = new Category(); smartphone.setName("Smartphones");
+        Category laptop = new Category(); laptop.setName("Ordinateurs");
+        categoryRepository.saveAll(List.of(smartphone, laptop));
 
-        // 3. Création d'un pool d'images génériques pour la galerie
-        List<Picture> poolPictures = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        // 3. Création d'une Promotion
+        Promotion flashSale = new Promotion();
+        flashSale.setName("Vente Flash");
+        flashSale.setDiscountRate(15.0);
+        promotionRepository.save(flashSale);
+
+        // 4. Pool d'images
+        List<Picture> pool = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
             Picture pic = new Picture();
-            pic.setName("Gallery Pic " + i);
-            pic.setPictureUrl("https://picsum.photos/seed/" + i + "/800/600");
+            pic.setName("Tech Item " + i);
+            pic.setPictureUrl("https://picsum.photos/seed/tech" + i + "/800/600");
             pic.setIsActive(true);
-            poolPictures.add(pictureRepository.save(pic));
+            pool.add(pictureRepository.save(pic));
         }
 
-        // 4. Génération de Produits
-        for (int i = 0; i < 20; i++) {
+        // 5. Génération des produits
+        for (int i = 0; i < 30; i++) {
             Product p = new Product();
-            // Ajout d'un suffixe aléatoire pour garantir l'unicité du nom (contrainte UK)
-            p.setProductName(faker.commerce().productName() + " " + faker.random().hex(4));
+            p.setProductName(faker.commerce().productName() + " " + faker.random().hex(3));
             p.setBrand(faker.company().name());
-            p.setColor(faker.color().name());
+
+            // On pioche une couleur dans notre liste fixe
+            p.setColor(colors.get(faker.number().numberBetween(0, colors.size())));
+
             p.setDescription(faker.lorem().paragraph());
-            p.setPrice(faker.number().randomDouble(2, 50, 1500));
-            p.setQuantity(faker.number().numberBetween(0, 100));
-            p.setReference("REF-" + faker.random().hex(8).toUpperCase());
+            p.setPrice(faker.number().randomDouble(2, 100, 1200));
+            p.setQuantity(faker.number().numberBetween(1, 20));
+            p.setReference("PROD-" + faker.random().hex(6).toUpperCase());
             p.setIsEnabled(true);
-            p.setCategory(tech);
-            p.setDefaultPicture(poolPictures.get(0)); // Image principale
+            p.setCategory(i % 2 == 0 ? smartphone : laptop);
+            p.setDefaultPicture(pool.get(faker.number().numberBetween(0, 5)));
 
             productRepository.save(p);
 
-            // A. Ajouter des images à la galerie (Table ProductPicture)
-            for (int j = 1; j < 3; j++) {
+            // Galerie : On ajoute 2 photos par produit
+            for (int j = 0; j < 2; j++) {
                 ProductPicture ppic = new ProductPicture();
                 ppic.setProduct(p);
-                ppic.setPicture(poolPictures.get(faker.number().numberBetween(0, 5)));
+                ppic.setPicture(pool.get(faker.number().numberBetween(5, 10)));
                 productPictureRepository.save(ppic);
             }
 
-            // B. Appliquer la promo à 1 produit sur 2 (Table ProductPromotion)
-            if (i % 2 == 0) {
+            // Promos : 1 produit sur 3 est en promo
+            if (i % 3 == 0) {
                 ProductPromotion pp = new ProductPromotion();
                 pp.setProduct(p);
-                pp.setPromotion(winterSale);
-                pp.setStartDate(LocalDateTime.now().minusDays(1)); // Déjà commencée
-                pp.setEndDate(LocalDateTime.now().plusMonths(1));   // Finit dans un mois
+                pp.setPromotion(flashSale);
+                pp.setStartDate(LocalDateTime.now().minusDays(2));
+                pp.setEndDate(LocalDateTime.now().plusDays(5));
                 productPromotionRepository.save(pp);
             }
         }
 
-        System.out.println(">> Fake Data (Produits, Galeries, Promos) générée !");
+        System.out.println(">> Données de test (Couleurs fixes, Promos, Galerie) prêtes !");
     }
 }
