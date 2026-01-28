@@ -152,13 +152,9 @@
                         </dl>
                     </div>
 
-                    <form th:action="@{/user/cart/checkout}" method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-
-                        <button type="submit" class="flex w-full items-center justify-center rounded-pill bg-anthracite px-5 py-3 text-sm font-bold text-platine hover:bg-obsidienne hover:text-white transition-all focus:outline-none focus:ring-4 focus:ring-gray-300">
-                            Valider ma commande
-                        </button>
-                    </form>
+                    <a th:href="@{/user/cart/checkout}" class="flex w-full items-center justify-center rounded-pill bg-anthracite px-5 py-3 text-sm font-bold text-platine hover:bg-obsidienne hover:text-white transition-all focus:outline-none focus:ring-4 focus:ring-gray-300">
+                        Passer au checkout
+                    </a>
 
                     <div class="flex items-center justify-center gap-2">
                         <span class="text-sm font-normal text-gray-500"> ou </span>
@@ -169,18 +165,6 @@
                             </svg>
                         </a>
                     </div>
-                </div>
-
-                <div class="space-y-4 rounded-xl border border-platine bg-white p-4 shadow-sm sm:p-6">
-                    <form class="space-y-4">
-                        <div>
-                            <label for="voucher" class="mb-2 block text-sm font-medium text-anthracite"> Code promo </label>
-                            <input type="text" id="voucher" class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors" placeholder="Entrez votre code" />
-                        </div>
-                        <button type="button" class="flex w-full items-center justify-center rounded-pill border-2 border-platine bg-white px-5 py-2.5 text-sm font-medium text-anthracite hover:bg-platine transition-all">
-                            Appliquer
-                        </button>
-                    </form>
                 </div>
             </div>
 
