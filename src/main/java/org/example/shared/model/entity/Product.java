@@ -59,7 +59,7 @@ public class Product {
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     private List<ProductPromotion> productPromotions;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "product_picture",
             joinColumns = @JoinColumn(name = "product_id"),

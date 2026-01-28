@@ -14,16 +14,16 @@
         <img class="h-10 w-auto object-contain" th:src="@{/files/logo.png}" alt="Logo TZ">
     </a>
 
-    <div class="hidden lg:flex flex-1 max-w-2xl mx-10 items-center border border-white/50 px-4 py-2 rounded-full transition focus-within:border-white focus-within:bg-[#2A2A2A]">
-        <form th:action="@{/user/shop}" method="get" class="relative">
+    <div class="hidden lg:flex flex-1 max-w-md mx-10">
+        <form th:action="@{/user/shop}" method="get" class="relative w-full group">
             <input type="text"
                    name="keyword"
                    th:value="${keyword}"
-                   placeholder="Rechercher un produit..."
-                   class="rounded-pill border-2 border-platine bg-transparent px-4 py-2 focus:border-or-champagne outline-none">
+                   placeholder="Rechercher un modèle, une marque..."
+                   class="w-full bg-transparent border border-platine/30 text-platine placeholder-gray-400 text-sm rounded-full py-2 pl-4 pr-10 transition-all duration-300 focus:border-or-champagne focus:bg-anthracite/50 focus:outline-none focus:ring-1 focus:ring-or-champagne">
 
-            <button type="submit" class="absolute right-3 top-2.5">
-                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-or-champagne transition-colors">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </button>
@@ -76,7 +76,7 @@
     </div>
 
     <a th:href="@{/user/profile}" class="block py-2 border-b border-[#333]">Mon Profil</a>
-    <a th:href="@{/user/cart}" class="block py-2 border-b border-[#333]">Panier (3)</a>
+    <a th:href="@{/user/cart}" class="block py-2 border-b border-[#333]">Panier </a>
     <a th:href="@{/user/shop}" class="block py-2">Accueil</a>
 </div>
 

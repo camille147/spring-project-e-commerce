@@ -6,6 +6,8 @@ import org.example.shared.model.DTO.CartItem;
 import org.example.shared.model.entity.*;
 import org.example.shared.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +37,7 @@ public class CartController {
 
     @Autowired
     private OrderRepository orderRepository;
+
 
     @PostMapping("/add")
     public String addToCart(@RequestParam("productId") Long productId,
@@ -109,7 +112,7 @@ public class CartController {
     }
 
 
-    @PostMapping("/checkout")
+    @PostMapping("/checkout/validate")
     @Transactional // tout doit réussir ou tout échouer
     public String processCheckout(HttpSession session, Principal principal) {
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
@@ -123,7 +126,7 @@ public class CartController {
         order.setUser(user);
         order.setOrderNumber(generateOrderNumber());
         order.setCreatedAt(LocalDateTime.now());
-        order.setStatus(1);
+        order.setStatus(0);
 
         Address address = addressRepository.findByUserAndIsActiveTrue(user)
                 .stream().findFirst().orElseThrow(() -> new RuntimeException("Adresse manquante"));
@@ -151,6 +154,24 @@ public class CartController {
 
         return "redirect:/user/profile?success=order_confirmed";
     }
+
+    @GetMapping("/checkout")
+    public String checkout(HttpSession session, Model model, @AuthenticationPrincipal UserDetails principal) {
+
+        User user = userRepository.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
+
+        double total = cart.values().stream()
+                .mapToDouble(CartItem::getSubTotal)
+                .sum();
+        model.addAttribute("user", user);
+        model.addAttribute("cartItems", cart.values());
+        model.addAttribute("total", total);
+
+        return "user/checkout";
+    }
+
 
     private String generateOrderNumber() {
         return String.valueOf((int)(Math.random() * 900000000 + 100000000)); // Génère 9 chiffres
