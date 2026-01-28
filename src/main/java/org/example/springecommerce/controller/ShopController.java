@@ -48,7 +48,9 @@ public class ShopController {
 
         model.addAttribute("product", productPage.getContent());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("sort", sort);
         model.addAttribute("selectedColors", colors);
+        model.addAttribute("categoryId", categoryId);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", productPage.getTotalPages());
         model.addAttribute("categories", categoryRepository.findAll());

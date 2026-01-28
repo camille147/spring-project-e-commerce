@@ -13,6 +13,7 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+
     @Query("SELECT p FROM Product p " +
             "LEFT JOIN FETCH p.productPromotions pp " +
             "LEFT JOIN FETCH pp.promotion prom " +
