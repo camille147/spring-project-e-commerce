@@ -8,87 +8,99 @@
 </head>
 <body class="bg-gray-100">
 
-<nav th:fragment="navbar-user" class="flex items-center justify-between px-6 md:px-12 lg:px-24 py-4 bg-[#1F1F1F] text-white border-b border-[#333] relative">
+<div th:fragment="navbar-user">
 
-    <a th:href="@{/user/shop}" class="flex-shrink-0">
-        <img class="h-10 w-auto object-contain" th:src="@{/files/logo.png}" alt="Logo TZ">
-    </a>
+    <nav class="flex items-center justify-between px-6 md:px-12 lg:px-24 py-4 bg-[#1F1F1F] text-white border-b border-[#333] relative">
 
-    <div class="hidden lg:flex flex-1 max-w-md mx-10">
-        <form th:action="@{/user/shop}" method="get" class="relative w-full group">
-            <input type="text"
+        <a th:href="@{/user/shop}" class="flex-shrink-0">
+            <img class="h-14 w-auto object-contain" th:src="@{/files/logo.png}" alt="Logo TZ">
+        </a>
+
+        <div class="hidden lg:flex flex-1 max-w-md mx-10">
+            <form th:action="@{/user/shop}" method="get" class="relative w-full group">
+                <input type="text"
+                       name="keyword"
+                       th:value="${keyword}"
+                       placeholder="Rechercher un modèle, une marque..."
+                       class="w-full bg-transparent border border-gray-600 text-white placeholder-gray-400 text-sm rounded-full py-2 pl-4 pr-10 transition-all duration-300 focus:border-[#C5A059] focus:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]">
+
+                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-[#C5A059] transition-colors">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <button aria-label="Menu" id="menu-toggle" class="lg:hidden text-white focus:outline-none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="hidden lg:flex items-center gap-6 flex-shrink-0">
+
+            <a th:href="@{/user/profile}" class="hover:text-gray-300 transition">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </a>
+
+            <a th:href="@{/user/cart}" class="relative cursor-pointer hover:text-gray-300 transition inline-block">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3.3 3H5.6L6.9 14.5C7 15.3 7.7 16 8.6 16H18.3C19.1 16 19.8 15.4 19.9 14.5L20.8 7H6M9 20C9 20.6 8.6 21 8 21C7.4 21 7 20.6 7 20C7 19.4 7.4 19 8 19C8.6 19 9 19.4 9 20ZM19 20C19 20.6 18.6 21 18 21C17.4 21 17 20.6 17 20C17 19.4 17 19 18 19C18.6 19 19 19.4 19 20Z"
+                          stroke="white" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+
+                <span th:if="${cartCount > 0}"
+                      th:text="${cartCount}"
+                      class="absolute -top-2 -right-2 flex items-center justify-center
+                             min-w-[18px] h-[18px] px-1
+                             bg-[#C5A059] text-black
+                             text-[10px] font-bold rounded-full">
+                </span>
+            </a>
+
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="hidden flex-col bg-[#1F1F1F] text-white px-6 py-4 space-y-4 border-b border-[#333] lg:hidden">
+        <form th:action="@{/user/shop}" method="get" class="flex items-center border border-white/50 px-3 py-2 rounded-full focus-within:border-[#C5A059] transition-colors">
+            <input class="w-full bg-transparent outline-none text-white placeholder-gray-400 text-sm"
+                   type="text"
                    name="keyword"
                    th:value="${keyword}"
-                   placeholder="Rechercher un modèle, une marque..."
-                   class="w-full bg-transparent border border-platine/30 text-platine placeholder-gray-400 text-sm rounded-full py-2 pl-4 pr-10 transition-all duration-300 focus:border-or-champagne focus:bg-anthracite/50 focus:outline-none focus:ring-1 focus:ring-or-champagne">
+                   placeholder="Rechercher..." />
 
-            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-or-champagne transition-colors">
+            <button type="submit" class="ml-2 text-gray-400 hover:text-[#C5A059] transition-colors">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </button>
         </form>
+
+        <a th:href="@{/user/profile}" class="block py-2 border-b border-[#333]">Mon Profil</a>
+        <a th:href="@{/user/cart}" class="block py-2 border-b border-[#333]">Panier </a>
+        <a th:href="@{/user/shop}" class="block py-2">Accueil</a>
     </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const menuToggle = document.getElementById("menu-toggle");
+            const mobileMenu = document.getElementById("mobile-menu");
 
-    <button aria-label="Menu" id="menu-toggle" class="lg:hidden text-white focus:outline-none">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-    </button>
+            if(menuToggle && mobileMenu) {
+                menuToggle.addEventListener("click", function () {
+                    mobileMenu.classList.toggle("hidden");
+                    mobileMenu.classList.toggle("flex");
+                });
+            }
+        });
+    </script>
 
-    <div class="hidden lg:flex items-center gap-6 flex-shrink-0">
-
-        <a th:href="@{/user/profile}" class="hover:text-gray-300 transition">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </a>
-
-        <a th:href="@{/user/cart}" class="relative cursor-pointer hover:text-gray-300 transition inline-block">
-
-            <!-- Icône panier -->
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-                <path d="M3.3 3H5.6L6.9 14.5C7 15.3 7.7 16 8.6 16H18.3C19.1 16 19.8 15.4 19.9 14.5L20.8 7H6M9 20C9 20.6 8.6 21 8 21C7.4 21 7 20.6 7 20C7 19.4 7.4 19 8 19C8.6 19 9 19.4 9 20ZM19 20C19 20.6 18.6 21 18 21C17.4 21 17 20.6 17 20C17 19.4 17 19 18 19C18.6 19 19 19.4 19 20Z"
-                      stroke="white" stroke-width="1.5"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-
-            <span th:if="${cartCount > 0}"
-                  th:text="${cartCount}"
-                  class="absolute -top-2 -right-2 flex items-center justify-center
-                 min-w-[18px] h-[18px] px-1
-                 bg-or-champagne text-obsidienne
-                 text-[10px] font-bold rounded-full">
-    </span>
-
-        </a>
-
-    </div>
-</nav>
-
-<div id="mobile-menu" class="hidden flex-col bg-[#1F1F1F] text-white px-6 py-4 space-y-4 border-b border-[#333] lg:hidden">
-    <div class="flex items-center border border-white/50 px-3 py-2 rounded-full">
-        <input class="w-full bg-transparent outline-none text-white placeholder-gray-400 text-sm" type="text" placeholder="Rechercher..." />
-    </div>
-
-    <a th:href="@{/user/profile}" class="block py-2 border-b border-[#333]">Mon Profil</a>
-    <a th:href="@{/user/cart}" class="block py-2 border-b border-[#333]">Panier </a>
-    <a th:href="@{/user/shop}" class="block py-2">Accueil</a>
 </div>
-
-<script>
-    const menuToggle = document.getElementById("menu-toggle");
-    const mobileMenu = document.getElementById("mobile-menu");
-
-    menuToggle.addEventListener("click", function () {
-        mobileMenu.classList.toggle("hidden");
-        mobileMenu.classList.toggle("flex");
-    });
-</script>
-
 </body>
 </html>
