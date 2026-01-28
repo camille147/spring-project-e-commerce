@@ -33,13 +33,38 @@
     <style>
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
-        details[open] summary svg { transform: rotate(180deg); }
+        details[open] summary .rotate-icon { transform: rotate(180deg); }
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-body-bg font-montserrat text-anthracite">
+<body class="bg-body-bg font-montserrat text-anthracite"
+      x-data="{
+          toastVisible: false,
+          toastMessage: '',
+          init() {
+             const urlParams = new URLSearchParams(window.location.search);
+             if(urlParams.has('deleted')) {
+                 this.toastMessage = 'Adresse supprimée avec succès.';
+                 this.toastVisible = true;
+                 setTimeout(() => this.toastVisible = false, 4000);
+             }
+          }
+      }">
 
 <div th:replace="~{user/navbar :: navbar-user}"></div>
+
+<div x-show="toastVisible" x-cloak
+     x-transition:enter="transition ease-out duration-300"
+     x-transition:enter-start="translate-y-full opacity-0"
+     x-transition:enter-end="translate-y-0 opacity-100"
+     x-transition:leave="transition ease-in duration-200"
+     x-transition:leave-start="translate-y-0 opacity-100"
+     x-transition:leave-end="translate-y-full opacity-0"
+     class="fixed bottom-5 right-5 z-50 bg-anthracite text-white px-6 py-4 rounded-xl shadow-xl flex items-center gap-3 border-l-4 border-or-champagne">
+    <svg class="w-6 h-6 text-or-champagne" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+    <span x-text="toastMessage" class="font-medium">Notification</span>
+    <button @click="toastVisible = false" class="ml-4 text-gray-400 hover:text-white"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+</div>
 
 <main class="max-w-7xl mx-auto px-4 py-12">
 
@@ -90,32 +115,13 @@
                     </div>
                 </div>
 
-                <div x-show="editProfileModal"
-                     style="display: none;"
+                <div x-show="editProfileModal" x-cloak
                      class="fixed inset-0 z-50 flex items-center justify-center p-4">
-
-                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-                         x-transition:enter="ease-out duration-300"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
-                         x-transition:leave="ease-in duration-200"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0"
-                         @click="editProfileModal = false"></div>
-
-                    <div class="relative w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl z-10"
-                         x-transition:enter="transition ease-out duration-300 transform"
-                         x-transition:enter-start="scale-95 opacity-0"
-                         x-transition:enter-end="scale-100 opacity-100"
-                         x-transition:leave="transition ease-in duration-200 transform"
-                         x-transition:leave-start="scale-100 opacity-100"
-                         x-transition:leave-end="scale-95 opacity-0">
-
+                    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="editProfileModal = false"></div>
+                    <div class="relative w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl z-10">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-xl font-bold text-gray-900 text-left">Modifier mes infos</h2>
-                            <button type="button" @click="editProfileModal = false" class="text-gray-400 hover:text-gray-600 transition">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
+                            <button type="button" @click="editProfileModal = false" class="text-gray-400 hover:text-gray-600 transition"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                         </div>
 
                         <form th:action="@{/user/profile/update}" method="post" class="space-y-4 text-left">
@@ -124,32 +130,25 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nom</label>
-                                    <input type="text" name="lastName" th:value="${user.lastName}" required
-                                           class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                    <input type="text" name="lastName" th:value="${user.lastName}" required minlength="3"
+                                           class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Prénom</label>
-                                    <input type="text" name="firstName" th:value="${user.firstName}" required
-                                           class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                    <input type="text" name="firstName" th:value="${user.firstName}" required minlength="3"
+                                           class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
                                 <input type="email" name="email" th:value="${user.email}" required
-                                       class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                       class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                             </div>
 
-
                             <div class="flex flex-col gap-3 pt-4">
-                                <button type="submit"
-                                        class="w-full py-3 bg-anthracite hover:bg-obsidienne text-platine rounded-xl font-bold transition shadow-lg">
-                                    Enregistrer
-                                </button>
-                                <button type="button" @click="editProfileModal = false"
-                                        class="w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition">
-                                    Annuler
-                                </button>
+                                <button type="submit" class="w-full py-3 bg-anthracite hover:bg-obsidienne text-platine rounded-xl font-bold transition shadow-lg">Enregistrer</button>
+                                <button type="button" @click="editProfileModal = false" class="w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition">Annuler</button>
                             </div>
                         </form>
                     </div>
@@ -166,7 +165,7 @@
                 <ul th:unless="${user?.addresses.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <li th:each="addr : ${user?.addresses}" th:if="${addr.isActive}"
-                        x-data="{ openModal: false }"
+                        x-data="{ editModalOpen: false, deleteModalOpen: false }"
                         class="bg-white border border-platine rounded-xl p-5 hover:border-or-champagne transition-all group relative shadow-sm hover:shadow-md">
 
                         <div class="flex items-start justify-between">
@@ -183,98 +182,81 @@
                             </div>
 
                             <div class="flex flex-col gap-2">
-                                <button type="button"
-                                        @click="openModal = true"
-                                        class="p-2 rounded-full bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm cursor-pointer"
-                                        title="Modifier">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                    </svg>
+                                <button type="button" @click="editModalOpen = true"
+                                        class="p-2 rounded-full bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                 </button>
 
-                                <form th:action="@{/user/address/delete}" method="post" class="inline">
-                                    <input type="hidden" name="addressId" th:value="${addr.id}">
-                                    <button type="submit" onclick="return confirm('Supprimer cette adresse ?')"
-                                            class="p-2 rounded-full bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all shadow-sm"
-                                            title="Supprimer">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        @click="deleteModalOpen = true"
+                                        class="p-2 rounded-full bg-gray-50 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
 
-                        <div x-show="openModal"
-                             style="display: none;"
-                             class="fixed inset-0 z-50 flex items-center justify-center p-4">
-
-                            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-                                 x-transition:enter="ease-out duration-300"
-                                 x-transition:enter-start="opacity-0"
-                                 x-transition:enter-end="opacity-100"
-                                 x-transition:leave="ease-in duration-200"
-                                 x-transition:leave-start="opacity-100"
-                                 x-transition:leave-end="opacity-0"
-                                 @click="openModal = false"></div>
-
-                            <div class="relative w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl z-10"
-                                 x-transition:enter="transition ease-out duration-300 transform"
-                                 x-transition:enter-start="scale-95 opacity-0"
-                                 x-transition:enter-end="scale-100 opacity-100"
-                                 x-transition:leave="transition ease-in duration-200 transform"
-                                 x-transition:leave-start="scale-100 opacity-100"
-                                 x-transition:leave-end="scale-95 opacity-0">
-
+                        <div x-show="editModalOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="editModalOpen = false"></div>
+                            <div class="relative w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl z-10">
                                 <div class="flex justify-between items-center mb-6">
                                     <h2 class="text-xl font-bold text-gray-900 text-left">Modifier l'adresse</h2>
-                                    <button type="button" @click="openModal = false" class="text-gray-400 hover:text-gray-600 transition">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+                                    <button type="button" @click="editModalOpen = false" class="text-gray-400 hover:text-gray-600 transition"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                                 </div>
-
                                 <form th:action="@{/user/address/update}" method="post" class="space-y-4 text-left">
                                     <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <input type="hidden" name="id" th:value="${addr.id}">
-
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-1">Rue</label>
                                         <input type="text" name="street" th:value="${addr.street}" required
-                                               class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                               class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                     </div>
-
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-1">Code Postal</label>
-                                            <input type="text" name="zipCode" th:value="${addr.zipCode}" required
-                                                   class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                            <input type="text" name="zipCode" th:value="${addr.zipCode}" required minlength="5" maxlength="5" pattern="[0-9]{5}"
+                                                   class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-semibold text-gray-700 mb-1">Ville</label>
                                             <input type="text" name="city" th:value="${addr.city}" required
-                                                   class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                                   class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                         </div>
                                     </div>
-
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-700 mb-1">Pays</label>
                                         <input type="text" name="country" th:value="${addr.country}" required
-                                               class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne focus:border-or-champagne outline-none transition">
+                                               class="block w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-or-champagne outline-none transition">
                                     </div>
-
                                     <div class="flex flex-col gap-3 pt-4">
-                                        <button type="submit"
-                                                class="w-full py-3 bg-anthracite hover:bg-obsidienne text-platine rounded-xl font-bold transition shadow-lg">
-                                            Mettre à jour
-                                        </button>
-                                        <button type="button" @click="openModal = false"
-                                                class="w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition">
-                                            Annuler
-                                        </button>
+                                        <button type="submit" class="w-full py-3 bg-anthracite hover:bg-obsidienne text-platine rounded-xl font-bold transition shadow-lg">Mettre à jour</button>
+                                        <button type="button" @click="editModalOpen = false" class="w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition">Annuler</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
+
+                        <div x-show="deleteModalOpen" x-cloak
+                             class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="deleteModalOpen = false"></div>
+                            <div class="relative w-full max-w-sm p-6 bg-white rounded-2xl shadow-2xl z-10 text-center">
+                                <div class="mb-4 text-red-100 bg-red-500 w-12 h-12 rounded-full mx-auto flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-2">Supprimer l'adresse ?</h3>
+                                <p class="text-sm text-gray-500 mb-6">Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?</p>
+
+                                <form th:action="@{/user/address/delete}" method="post">
+                                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="addressId" th:value="${addr.id}">
+
+                                    <div class="flex gap-3">
+                                        <button type="button" @click="deleteModalOpen = false" class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition">Annuler</button>
+                                        <button type="submit" class="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition shadow-lg">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                     </li>
                 </ul>
             </div>
@@ -287,7 +269,7 @@
                         </div>
                         <h2 class="text-xl font-playfair font-bold text-obsidienne">Historique des Commandes</h2>
                     </div>
-                    <svg class="h-5 w-5 text-gray-500 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg class="rotate-icon h-5 w-5 text-gray-500 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
                 </summary>
@@ -330,35 +312,8 @@
                                 </td>
 
                                 <td class="px-4 py-4">
-                                    <a href="#" class="text-anthracite hover:text-or-champagne underline transition-colors">Voir</a>
+                                    <a th:href="@{/user/order/{id}(id=${order.id})}" class="text-anthracite hover:text-or-champagne underline transition-colors">Voir</a>
                                 </td>
-
-                                <td class="px-4 py-4 text-gray-600"
-                                    th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
-
-                                <td class="px-4 py-4 font-bold text-or-champagne"
-                                    th:text="${#numbers.formatDecimal(order.total, 1, 2)} + ' €'">150.00 €</td>
-
-                                <td class="px-4 py-4">
-                                    <span th:with="status=${T(org.example.shared.model.enumeration.OrderStatus).fromCode(order.status)}"
-                                          th:text="${status.label}"
-                                          th:classappend="${
-                                            status.code == 0 ? 'bg-orange-100 text-orange-700' :
-                                            (status.code == 1 ? 'bg-blue-100 text-blue-700' :
-                                            (status.code == 2 ? 'bg-indigo-100 text-indigo-700' :
-                                            'bg-green-100 text-green-700'))}"
-                                          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider">
-                                        Statut
-                                    </span>
-                                </td>
-
-                                <td class="px-4 py-4">
-                                    <a href="#" class="text-anthracite hover:text-or-champagne underline transition-colors">Voir</a>
-                                </td>
-                                <td class="px-4 py-4 text-gray-600" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
-                                <td class="px-4 py-4 font-bold text-or-champagne" th:text="${#numbers.formatDecimal(order.total, 1, 2)} + ' €'">150.00 €</td>
-                                <td class="px-4 py-4"><span class="inline-flex items-center rounded-full bg-platine px-2.5 py-0.5 text-xs font-medium text-anthracite">Terminée</span></td>
-                                <td class="px-4 py-4"><a href="#" class="text-anthracite hover:text-or-champagne underline transition-colors">Voir</a></td>
                             </tr>
                             </tbody>
                         </table>
@@ -377,26 +332,26 @@
                     <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                     <div>
                         <label class="block text-sm font-bold text-anthracite mb-2">Rue</label>
-                        <input type="text" th:field="*{street}" placeholder="ex: 10 rue de la Paix"
+                        <input type="text" th:field="*{street}" placeholder="ex: 10 rue de la Paix" required
                                class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors placeholder-gray-400" />
                         <p th:if="${#fields.hasErrors('street')}" th:errors="*{street}" class="mt-1 text-xs text-red-600 font-medium"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-bold text-anthracite mb-2">Code Postal</label>
-                            <input type="text" th:field="*{zipCode}"
+                            <input type="text" th:field="*{zipCode}" required minlength="5" maxlength="5" pattern="[0-9]{5}"
                                    class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors" />
                             <p th:if="${#fields.hasErrors('zipCode')}" th:errors="*{zipCode}" class="mt-1 text-xs text-red-600 font-medium"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-anthracite mb-2">Ville</label>
-                            <input type="text" th:field="*{city}"
+                            <input type="text" th:field="*{city}" required
                                    class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors" />
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-bold text-anthracite mb-2">Pays</label>
-                        <input type="text" th:field="*{country}"
+                        <input type="text" th:field="*{country}" required
                                class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors" />
                     </div>
                     <button type="submit" class="w-full flex items-center justify-center rounded-pill bg-anthracite px-6 py-3 text-sm font-bold text-platine hover:bg-obsidienne hover:text-white transition-all shadow-md mt-4">
