@@ -129,6 +129,8 @@
             </svg>
             <span class="font-medium tracking-wide" th:classappend="${activePage == 'users'} ? 'font-bold'">Utilisateurs</span>
         </a>
+
+
     </nav>
 
     <div class="p-6 border-t border-white/5 bg-black/20">
@@ -138,7 +140,7 @@
             </div>
             <div>
                 <p class="text-sm font-bold text-white">Admin</p>
-                <p class="text-xs text-or-champagne cursor-pointer hover:underline">Voir profil</p>
+                <a th:href="@{/admin/profile}" class="text-xs text-or-champagne cursor-pointer hover:underline block">Voir profil</a>
             </div>
         </div>
 
