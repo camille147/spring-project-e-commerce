@@ -2,7 +2,6 @@ package org.example.shared.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,14 +14,11 @@ public class ProductPromotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "La date de début est obligatoire")
     @Column(nullable = false)
     private LocalDateTime startDate;
 
-    @NotNull(message = "La date de fin est obligatoire")
     @Column(nullable = false)
     private LocalDateTime endDate;
-
 
     @ManyToOne
     @JoinColumn(name = "product_id")
