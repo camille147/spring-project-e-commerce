@@ -71,7 +71,6 @@ public class ProductControllerApi {
         repository.deleteById(id);
     }
 
-    // New PATCH endpoint to update stock
     @PatchMapping("/admin/products/{id}/stock")
     public ResponseEntity<?> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         Optional<Product> existing = repository.findById(id);

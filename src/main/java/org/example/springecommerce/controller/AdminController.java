@@ -45,6 +45,11 @@ public class AdminController {
         return "admin/dashboard";
     }
 
+    @GetMapping("/admin/discounts")
+    public String adminDiscounts() {
+        return "admin/discounts";
+    }
+
 
     @GetMapping("/admin/orders")
     public String adminOrders() {

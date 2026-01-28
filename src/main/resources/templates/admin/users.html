@@ -2,19 +2,271 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Users</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Utilisateurs</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        platine: '#E5E4E2',
+                        anthracite: '#1F1F1F',
+                        'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A',
+                        'body-bg': '#F2F2F2',
+                        'success-bg': '#EAFCF2',
+                        'success-text': '#2D9F64',
+                        'danger-bg': '#FFF0F0',
+                        'danger-text': '#E44B4B',
+                        'info-bg': '#E0F2FE',
+                        'info-text': '#0369A1',
+                    },
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'btn': '50px',
+                        'card': '10px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Style identique à la page Produits */
+        .table-spacing {
+            border-collapse: separate;
+            border-spacing: 0 15px;
+        }
+        .table-row-card td {
+            background-color: white;
+            border-top: 1px solid white;
+            border-bottom: 1px solid white;
+        }
+        .table-row-card td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            padding-left: 24px;
+        }
+        .table-row-card td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding-right: 24px;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-body-bg min-h-screen flex text-anthracite font-montserrat">
 
 <div th:replace="~{admin/dashboard :: admin-sidebar}"></div>
 
-<main class="p-10 md:ml-64">
-    <div class="max-w-6xl mx-auto">
-        <h1 class="text-2xl font-bold">Utilisateurs (stub)</h1>
-        <p class="text-sm text-gray-500 mt-4">Liste des utilisateurs de l'application (à implémenter).</p>
+<main class="flex-1 lg:ml-72 p-10 bg-body-bg transition-all">
+
+    <div class="flex justify-between items-center mb-10 max-w-7xl mx-auto">
+        <h1 class="text-[35px] font-playfair text-[#18181b] font-bold">Utilisateurs</h1>
+
+        <div class="flex gap-4">
+            <form action="#" class="relative hidden md:block">
+                <input type="text" placeholder="Rechercher..." class="pl-4 pr-10 py-3 rounded-[14px] border-none shadow-sm outline-none focus:ring-2 focus:ring-or-champagne transition w-64">
+                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </form>
+
+            <button onclick="openModalForCreate()" class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center hover:bg-gray-50 transition">
+                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </div>
     </div>
+
+    <div class="max-w-7xl mx-auto">
+        <div class="overflow-x-auto">
+            <table class="w-full table-spacing">
+                <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Utilisateur</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Rôle</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Date création</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-sm">
+                <tr th:each="u : ${users}" class="table-row-card shadow-sm hover:shadow-md transition-shadow duration-200">
+
+                    <td class="py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full object-cover border border-platine"
+                                     th:src="${u.avatarUrl != null ? u.avatarUrl : 'https://ui-avatars.com/api/?name=' + u.firstName + '+' + u.lastName + '&background=random'}"
+                                     alt="avatar" />
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-anthracite" th:text="${u.firstName + ' ' + u.lastName}">Jean Dupont</div>
+                                <div class="text-sm text-gray-500" th:text="${u.email}">jean@example.com</div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap">
+                                <span th:text="${u.role}"
+                                      th:classappend="${u.role == 'ADMIN'} ? 'bg-anthracite text-white' : 'bg-gray-100 text-gray-600'"
+                                      class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                    USER
+                                </span>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap text-gray-500">
+                        <span th:text="${#temporals.format(u.createdAt, 'dd MMM yyyy')}">12/09/2020</span>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap">
+                                <span th:if="${u.active}" class="inline-flex items-center px-3 py-1 rounded-full bg-success-bg text-success-text text-xs font-semibold gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-success-text"></span>
+                                    Actif
+                                </span>
+                        <span th:unless="${u.active}" class="inline-flex items-center px-3 py-1 rounded-full bg-danger-bg text-danger-text text-xs font-semibold gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-danger-text"></span>
+                                    Inactif
+                                </span>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap text-gray-400">
+                        <div class="flex items-center gap-4">
+                            <button type="button" class="edit-btn text-gray-400 hover:text-anthracite transition"
+                                    th:attr="data-id=${u.id}" title="Modifier">
+                                Edit
+                            </button>
+
+                            <form th:action="@{/admin/users/delete/{id}(id=${u.id})}" method="post" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                                <button type="submit" class="text-gray-400 hover:text-danger-text transition" title="Supprimer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex items-center justify-between mt-8 font-montserrat text-sm text-gray-500">
+            <div class="flex items-center gap-2">
+                <span class="mr-2">Afficher</span>
+                <select class="appearance-none bg-white border border-platine rounded-md px-3 py-1 pr-8 focus:outline-none cursor-pointer">
+                    <option>10</option>
+                    <option>25</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">&lt;</a>
+                <span class="w-8 h-8 flex items-center justify-center bg-or-champagne text-white rounded cursor-pointer">1</span>
+                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">2</a>
+                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">&gt;</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="userModal" class="fixed inset-0 hidden items-center justify-center z-[100]">
+        <div class="absolute inset-0 bg-anthracite/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-[20px] shadow-2xl max-w-lg w-full z-10 p-8 transform transition-all">
+            <h2 class="font-playfair text-2xl font-bold mb-6 text-anthracite" id="modalTitle">Ajouter un utilisateur</h2>
+
+            <form id="userForm" method="post" th:action="@{/admin/users/save}">
+                <input type="hidden" name="id" id="m_id" />
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Prénom</label>
+                            <input name="firstName" id="m_firstName" type="text" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" required />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Nom</label>
+                            <input name="lastName" id="m_lastName" type="text" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" required />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Email</label>
+                        <input name="email" id="m_email" type="email" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" required />
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Rôle</label>
+                        <select name="role" id="m_role" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite bg-white">
+                            <option value="USER">Utilisateur</option>
+                            <option value="ADMIN">Administrateur</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-3 pt-2">
+                        <input type="checkbox" name="active" id="m_active" class="w-5 h-5 accent-anthracite rounded cursor-pointer" />
+                        <label for="m_active" class="cursor-pointer">Compte actif</label>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 mt-2">
+                        <button type="button" onclick="closeModal()" class="px-5 py-2 rounded-btn text-anthracite hover:bg-gray-100 transition">Annuler</button>
+                        <button type="submit" class="px-5 py-2 rounded-btn bg-anthracite text-white shadow-lg hover:opacity-90 transition">Enregistrer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </main>
 
+<script>
+    function openModal() {
+        const modal = document.getElementById('userModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function openModalForCreate() {
+        document.getElementById('modalTitle').innerText = "Ajouter un utilisateur";
+        document.getElementById('userForm').reset();
+        document.getElementById('m_id').value = '';
+        document.getElementById('m_active').checked = true;
+        openModal();
+    }
+
+    function closeModal() {
+        document.getElementById('userModal').classList.remove('flex');
+        document.getElementById('userModal').classList.add('hidden');
+    }
+
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = btn.getAttribute('data-id');
+            document.getElementById('modalTitle').innerText = "Modifier l'utilisateur";
+
+            try {
+                const res = await fetch(`/admin/users/${id}/data`);
+                const data = await res.json();
+
+                document.getElementById('m_id').value = data.id;
+                document.getElementById('m_firstName').value = data.firstName;
+                document.getElementById('m_lastName').value = data.lastName;
+                document.getElementById('m_email').value = data.email;
+                document.getElementById('m_role').value = data.role;
+                document.getElementById('m_active').checked = data.active;
+
+                openModal();
+            } catch(err) {
+                console.log("Erreur fetch ou mode démo");
+                openModal();
+            }
+        });
+    });
+</script>
 </body>
 </html>

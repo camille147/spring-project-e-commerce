@@ -46,25 +46,118 @@
         </span>
     </button>
 </div>
+<div class="flex justify-end mb-6 px-10">
+    <button class="text-white bg-[#1F1F1F] hover:bg-gray-800 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center gap-2"
+            type="button" data-drawer-target="drawer-filters" data-drawer-show="drawer-filters" data-drawer-placement="right" aria-controls="drawer-filters">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+        Filtres & Tri
+    </button>
+</div>
 
 <div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-    <div th:each="p: ${products}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
-        <a href="#" class="block relative flex-shrink-0">
-            <img class="w-full h-64 object-contain bg-gray-50 rounded-[10px] mb-4" src="/files/apple-watch.png" alt="produit" />
+    <div id="drawer-filters" class="fixed top-0 right-0 z-40 h-screen p-6 overflow-y-auto transition-transform translate-x-full bg-white w-full md:w-96" tabindex="-1" aria-labelledby="drawer-label">
+
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h5 id="drawer-label" class="text-xl font-semibold text-gray-800 uppercase font-Montserrat">Filtres</h5>
+            <button type="button" data-drawer-hide="drawer-filters" aria-controls="drawer-filters" class="text-gray-400 hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex items-center justify-center">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg>
+            </button>
+        </div>
+
+        <form th:action="@{/user/shop}" method="get" class="space-y-8">
+            <input type="hidden" name="keyword" th:value="${keyword}" />
+
+            <div>
+                <h3 class="text-sm font-bold text-gray-900 mb-3">Trier par</h3>
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        <input type="radio" name="sort" value="price,asc" id="sort1" th:checked="${param.sort == 'price,asc'}" class="w-4 h-4 text-black focus:ring-black">
+                        <label for="sort1" class="ml-2 text-sm text-gray-700 font-medium">Prix croissant</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" name="sort" value="price,desc" id="sort2" th:checked="${param.sort == 'price,desc'}" class="w-4 h-4 text-black focus:ring-black">
+                        <label for="sort2" class="ml-2 text-sm text-gray-700 font-medium">Prix décroissant</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div>
+                <h3 class="text-sm font-bold text-gray-900 mb-3">Catégories</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <div th:each="cat : ${categories}" class="flex items-center">
+                        <input type="checkbox" name="categoryId" th:id="'cat'+${cat.id}" th:value="${cat.id}"
+                               th:checked="${param.categoryId != null && param.categoryId.contains(cat.id.toString())}"
+                               class="w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
+                        <label th:for="'cat'+${cat.id}" th:text="${cat.name}" class="ml-2 text-sm text-gray-600 font-medium"></label>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div>
+                <h3 class="text-sm font-bold text-gray-900 mb-3">Couleur</h3>
+                <div class="grid grid-cols-2 gap-y-3">
+                    <div th:each="colorName : ${availableColors}" class="flex items-center">
+                        <input type="checkbox" name="colors" th:id="${colorName}" th:value="${colorName}"
+                               th:checked="${selectedColors != null && #lists.contains(selectedColors, colorName)}"
+                               class="w-4 h-4 text-black border-gray-300 rounded focus:ring-black">
+                        <label th:for="${colorName}" th:text="${colorName}" class="ml-2 text-sm text-gray-600 font-medium"></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full text-white bg-[#1F1F1F] hover:bg-black font-bold rounded-lg text-sm px-5 py-4 transition-all">
+                    Voir les produits
+                </button>
+                <a th:href="@{/user/shop}" class="block text-center mt-4 text-xs text-gray-400 underline uppercase tracking-widest">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+
+    <div th:each="p: ${product}" class="flex flex-col h-full w-full max-w-[320px] mx-auto bg-white p-4 border border-gray-200 rounded-[10px] shadow-sm hover:shadow-md transition-shadow">
+        <a th:href="@{/user/product/{id}(id=${p.id})}" class="block relative flex-shrink-0">
+            <img class="w-full h-64 object-contain bg-gray-50 rounded-[10px] mb-4"
+                 th:src="${p.defaultPicture != null ? p.defaultPicture.pictureUrl : '/files/placeholder.png'}"
+                 alt="Image du produit" />
         </a>
 
         <div class="flex flex-col flex-1">
-            <a th:href="@{/product/${p.id}}">
+            <a th:href="@{/user/product/{id}(id=${p.id})}">
                 <h5 class="text-lg font-semibold text-gray-800 leading-tight line-clamp-2 mb-4 font-Montserrat" th:text="${p.productName}"></h5>
             </a>
-
             <div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
                 <span class="text-2xl font-bold text-gray-900 font-Montserrat" th:text="${p.price}"></span>
-                <button type="button" class="inline-flex items-center text-white bg-[#1F1F1F] hover:bg-gray-700 transition-colors font-medium rounded-[10px] text-sm px-4 py-2.5 focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                    Ajouter
-                </button>
+                <div class="price-container">
+                    <div th:if="${p.isOnSale()}">
+                        <span style="text-decoration: line-through; color: #888;" th:text="${p.price} + ' €'"></span>
+                        <span style="color: red; font-weight: bold; font-size: 1.5em;"
+                              th:text="${#numbers.formatDecimal(p.getEffectivePrice(), 1, 2)} + ' €'"></span>
+                    </div>
+                    <div th:unless="${p.isOnSale()}">
+                        <span style="font-size: 1.5em;" th:text="${p.price} + ' €'"></span>
+                    </div>
+                </div>
+                <form th:action="@{/user/cart/add}" method="post">
+                    <input type="hidden" name="productId" th:value="${p.id}">
+
+                    <input type="hidden" name="quantity" value="1">
+
+                    <button type="submit"
+                            th:disabled="${p.quantity <= 0}"
+                            class="inline-flex items-center text-white bg-[#1F1F1F] hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium rounded-[10px] text-sm px-4 py-2.5 focus:outline-none">
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+
+                        <span th:text="${p.quantity > 0 ? 'Ajouter' : 'Épuisé'}"></span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -72,7 +165,6 @@
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="flex flex-col items-center space-y-4 pb-10 mt-8">
     <ul class="flex -space-x-px text-sm">
-
         <li>
             <a th:href="@{/user/shop(page=${currentPage - 1})}"
                th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
@@ -101,6 +193,10 @@
     </ul>
 </nav>
 
+<style>
+    @font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat.ttf'); }
+    .font-Montserrat { font-family: 'Montserrat', sans-serif; }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 </body>
 </html>

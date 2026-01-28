@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Panier - TechZone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        platine: '#E5E4E2',
+                        anthracite: '#1F1F1F',
+                        'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A',
+                        'body-bg': '#F2F2F2',
+                    },
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'pill': '50px',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-body-bg font-montserrat text-anthracite">
+
+<div th:replace="~{user/navbar :: navbar-user}"></div>
+
+<section class="py-8 md:py-16">
+    <div class="mx-auto max-w-screen-xl px-4 2xl:px-0">
+
+        <h2 class="text-3xl font-playfair font-bold text-obsidienne sm:text-4xl mb-8">Mon Panier</h2>
+
+        <div th:if="${cartItems.isEmpty()}" class="bg-white rounded-xl border border-platine p-10 text-center shadow-sm">
+            <div class="mb-4 text-or-champagne">
+                <svg class="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            </div>
+            <h3 class="text-xl font-bold text-anthracite mb-2">Votre panier est vide</h3>
+            <p class="text-gray-500 mb-6">Il semble que vous n'ayez pas encore craqué pour nos dernières nouveautés.</p>
+            <a th:href="@{/user/shop}" class="inline-flex items-center justify-center rounded-pill bg-anthracite px-8 py-3 text-base font-medium text-platine hover:bg-obsidienne transition-all">
+                Continuer mes achats
+            </a>
+        </div>
+
+        <div th:unless="${cartItems.isEmpty()}" class="mt-6 sm:mt-8 md:gap-6 lg:flex lg:items-start xl:gap-8">
+
+            <div class="mx-auto w-full flex-none lg:max-w-2xl xl:max-w-4xl">
+                <div class="space-y-6">
+
+                    <div th:each="item : ${cartItems}" class="rounded-xl border border-platine bg-white p-4 shadow-sm md:p-6 transition-all hover:shadow-md">
+                        <div class="space-y-4 md:flex md:items-center md:justify-between md:gap-6 md:space-y-0">
+
+                            <a th:href="@{/user/product/{id}(id=${item.product.id})}" class="shrink-0 md:order-1">
+                                <img class="h-20 w-20 object-contain rounded-lg border border-platine bg-gray-50"
+                                     th:src="${item.product.defaultPicture != null ? item.product.defaultPicture.pictureUrl : '/files/placeholder.png'}"
+                                     th:alt="${item.product.productName}" />
+                            </a>
+
+                            <label th:for="'counter-input-' + ${item.product.id}" class="sr-only">Quantité:</label>
+                            <div class="flex items-center justify-between md:order-3 md:justify-end">
+
+                                <div class="flex items-center rounded-pill border border-platine px-2">
+
+                                    <form th:action="@{/user/cart/update-quantity}" method="post" class="m-0">
+                                        <input type="hidden" name="itemId" th:value="${item.product.id}" />
+                                        <input type="hidden" name="action" value="remove" />
+                                        <button type="submit"
+                                                class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 hover:text-or-champagne focus:outline-none transition">
+                                            <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
+                                    <input type="text" th:id="'counter-input-' + ${item.product.id}"
+                                           th:value="${item.quantity}"
+                                           class="w-10 shrink-0 border-0 bg-transparent text-center text-sm font-bold text-anthracite focus:outline-none focus:ring-0"
+                                           readonly />
+
+                                    <form th:action="@{/user/cart/update-quantity}" method="post" class="m-0">
+                                        <input type="hidden" name="itemId" th:value="${item.product.id}" />
+                                        <input type="hidden" name="action" value="add" />
+                                        <button type="submit"
+                                                class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-600 hover:bg-gray-100 hover:text-or-champagne focus:outline-none transition">
+                                            <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
+                                </div>
+
+
+                                <div class="text-end md:order-4 md:w-32">
+                                    <p class="text-base font-bold text-or-champagne" th:text="${#numbers.formatDecimal(item.getSubTotal(), 1, 2)} + ' €'">0.00 €</p>
+                                </div>
+                            </div>
+
+                            <div class="w-full min-w-0 flex-1 space-y-4 md:order-2 md:max-w-md">
+                                <a th:href="@{/user/product/{id}(id=${item.product.id})}" class="text-base font-bold text-obsidienne hover:text-or-champagne transition-colors" th:text="${item.product.productName}">
+                                    Nom du Produit
+                                </a>
+                                <p class="text-sm text-gray-500">Prix unitaire: <span th:text="${#numbers.formatDecimal(item.product.getEffectivePrice(), 1, 2)} + ' €'"></span></p>
+
+                                <div class="flex items-center gap-4">
+                                    <form th:action="@{/user/cart/remove}" method="post">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                                        <input type="hidden" name="itemId" th:value="${item.product.id}" />
+
+                                        <button type="submit" class="inline-flex items-center text-sm font-medium text-red-600 hover:underline">
+                                            <svg class="me-1.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            Retirer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mx-auto mt-6 max-w-4xl flex-1 space-y-6 lg:mt-0 lg:w-full">
+                <div class="space-y-4 rounded-xl border border-platine bg-white p-4 shadow-sm sm:p-6 sticky top-4">
+                    <p class="text-xl font-playfair font-bold text-obsidienne">Résumé de la commande</p>
+
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <dl class="flex items-center justify-between gap-4">
+                                <dt class="text-base font-normal text-gray-500">Sous-total</dt>
+                                <dd class="text-base font-medium text-anthracite" th:text="${#numbers.formatDecimal(total, 1, 2)} + ' €'">0.00 €</dd>
+                            </dl>
+
+                            <dl class="flex items-center justify-between gap-4">
+                                <dt class="text-base font-normal text-gray-500">Livraison</dt>
+                                <dd class="text-base font-medium text-green-600">Offerte</dd>
+                            </dl>
+                        </div>
+
+                        <dl class="flex items-center justify-between gap-4 border-t border-platine pt-4">
+                            <dt class="text-lg font-bold text-obsidienne">Total</dt>
+                            <dd class="text-lg font-bold text-or-champagne" th:text="${#numbers.formatDecimal(total, 1, 2)} + ' €'">0.00 €</dd>
+                        </dl>
+                    </div>
+
+                    <form th:action="@{/user/cart/checkout}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                        <button type="submit" class="flex w-full items-center justify-center rounded-pill bg-anthracite px-5 py-3 text-sm font-bold text-platine hover:bg-obsidienne hover:text-white transition-all focus:outline-none focus:ring-4 focus:ring-gray-300">
+                            Valider ma commande
+                        </button>
+                    </form>
+
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="text-sm font-normal text-gray-500"> ou </span>
+                        <a th:href="@{/user/shop}" title="" class="inline-flex items-center gap-2 text-sm font-medium text-anthracite underline hover:text-or-champagne transition-colors">
+                            Continuer mes achats
+                            <svg class="h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="space-y-4 rounded-xl border border-platine bg-white p-4 shadow-sm sm:p-6">
+                    <form class="space-y-4">
+                        <div>
+                            <label for="voucher" class="mb-2 block text-sm font-medium text-anthracite"> Code promo </label>
+                            <input type="text" id="voucher" class="block w-full rounded-pill border-2 border-platine bg-transparent p-2.5 px-4 text-sm text-anthracite focus:border-or-champagne outline-none transition-colors" placeholder="Entrez votre code" />
+                        </div>
+                        <button type="button" class="flex w-full items-center justify-center rounded-pill border-2 border-platine bg-white px-5 py-2.5 text-sm font-medium text-anthracite hover:bg-platine transition-all">
+                            Appliquer
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
