@@ -53,13 +53,14 @@ public class CartController {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-        int currentQtyInCart = cart.containsKey(productId) ? cart.get(productId).getQuantity() : 0;
-
-        // vérif tot panier + nouveau pas sup au stock
-        if (currentQtyInCart + quantity <= product.getQuantity()) {
+        if (quantity <= product.getQuantity() && quantity > 0) {
             if (cart.containsKey(productId)) {
-                CartItem item = cart.get(productId);
-                item.setQuantity(currentQtyInCart + quantity);
+                // OPTION A : On REMPLACE la quantité (comportement fiche produit classique)
+                cart.get(productId).setQuantity(quantity);
+
+                // OPTION B : Si tu veux garder l'addition mais avec un plafond strict :
+                // int newTotal = Math.min(product.getQuantity(), cart.get(productId).getQuantity() + quantity);
+                // cart.get(productId).setQuantity(newTotal);
             } else {
                 cart.put(productId, new CartItem(product, quantity));
             }

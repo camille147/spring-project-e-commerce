@@ -22,20 +22,18 @@ public class ProductController {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-        // à rajouter aux btn @{/user/product/{id}(id=${p.id})}
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
-        int quantityInCart = 0;
 
-        // 2. Si le produit est déjà dans le panier, on récupère sa quantité
+        int quantityInCart = 0;
         if (cart != null && cart.containsKey(id)) {
             quantityInCart = cart.get(id).getQuantity();
         }
 
-        // 3. Calculer la quantité max que l'utilisateur peut encore ajouter
         int maxAvailable = product.getQuantity() - quantityInCart;
 
         model.addAttribute("product", product);
-        model.addAttribute("maxAvailable", maxAvailable); // On envoie cette variable à la vue
+        model.addAttribute("maxAvailable", maxAvailable);
+        model.addAttribute("quantityInCart", quantityInCart);
 
         return "user/product-detail";
     }
