@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class ProductForm {
-    private Long id; // Optionnel (rempli uniquement lors d'une modification)
+    private Long id;
 
     @NotBlank(message = "Le nom est obligatoire")
     private String productName;

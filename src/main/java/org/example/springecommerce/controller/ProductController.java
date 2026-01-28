@@ -24,4 +24,6 @@ public class ProductController {
         // à rajouter aux btn @{/user/product/{id}(id=${p.id})}
     }
 
+
+
 }

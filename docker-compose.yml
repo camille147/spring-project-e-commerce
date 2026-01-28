@@ -11,6 +11,7 @@ services:
     volumes:
       - h2_data:/app/data
 
+
   app-vue:
     build: .
     ports:
@@ -24,6 +25,12 @@ services:
     command: java -cp app.jar -Dloader.main=org.example.springecommerce.SpringECommerceApplication org.springframework.boot.loader.launch.JarLauncher
     volumes:
       - h2_data:/app/data
+    develop:
+        watch:
+          - action: rebuild
+            path: pom.xml
+          - action: rebuild
+            path: src
 
 volumes:
   h2_data:
