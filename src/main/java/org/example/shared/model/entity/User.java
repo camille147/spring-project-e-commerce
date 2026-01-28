@@ -27,8 +27,9 @@ public class User {
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
-    @JsonIgnore
+    //@JsonIgnore
     @NotBlank(message = "Password is mandatory")
+    @Size(min = 8)
     @Column(nullable = false)
     private String password;
 
