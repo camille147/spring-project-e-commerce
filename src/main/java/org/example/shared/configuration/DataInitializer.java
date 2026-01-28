@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -33,14 +32,21 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired private ProductPromotionRepository productPromotionRepository;
 
     @Override
-    @Transactional
+    // On retire @Transactional ici pour éviter de bloquer la table sur 1500+ insertions
     public void run(String... args) throws Exception {
-        // Sécurité pour ne pas doubler les données au redémarrage
-        if (productRepository.count() > 0 || userRepository.count() > 0) return;
+
+        if (productRepository.count() > 0 || userRepository.count() > 0) {
+            System.out.println(">> Données déjà présentes, saut de l'initialisation.");
+            return;
+        }
 
         Faker faker = new Faker(new Locale("fr"));
+        Random random = new Random();
         java.util.Set<String> usedEmails = new java.util.HashSet<>();
-        java.util.Random random = new java.util.Random();
+
+        // Bornes de dates pour 2025 - 2026
+        java.util.Date startDate = java.sql.Timestamp.valueOf("2025-01-01 00:00:00");
+        java.util.Date endDate = java.sql.Timestamp.valueOf("2026-12-31 23:59:59");
 
         // 1. Catégories
         Category smartphone = new Category(); smartphone.setName("Smartphones");
@@ -63,38 +69,14 @@ public class DataInitializer implements CommandLineRunner {
             pool.add(pictureRepository.save(pic));
         }
 
-        // 4. Création de l'Admin (Unique)
-        User admin = new User();
-        admin.setRole(UserRole.ADMIN);
-        admin.setEmail("admin@admin.com");
-        admin.setPassword(passwordEncoder.encode("adminadmin"));
-        admin.setFirstName("Admin");
-        admin.setLastName("TechZone");
-        admin.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
-        admin.setCreatedAt(LocalDateTime.now());
-        admin.setIsActivated(true);
-        userRepository.save(admin);
-        usedEmails.add(admin.getEmail());
+        // 4. Admin & Test User
+        createDefaultUsers(usedEmails);
 
-        User user = new User();
-        user.setRole(UserRole.USER);
-        user.setEmail("test@test.com");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setFirstName("Camille");
-        user.setLastName("Pinault");
-        user.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setIsActivated(true);
-        userRepository.save(user);
-        usedEmails.add(user.getEmail());
-
-        // 5. Création d'un pool d'utilisateurs (Clients)
+        // 5. Pool d'utilisateurs
         List<User> userPool = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 150; i++) {
             String email;
-            do {
-                email = faker.internet().emailAddress();
-            } while (usedEmails.contains(email)); // Garantie d'email unique
+            do { email = faker.internet().emailAddress(); } while (usedEmails.contains(email));
 
             User u = new User();
             u.setEmail(email);
@@ -105,24 +87,24 @@ public class DataInitializer implements CommandLineRunner {
             u.setIsActivated(true);
             u.setCreatedAt(LocalDateTime.now().minusDays(faker.number().numberBetween(1, 30)));
             u.setBirthDate(faker.date().birthday(18, 60).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-            userPool.add(userRepository.save(u));
+            userRepository.save(u);
+            userPool.add(u);
             usedEmails.add(email);
 
-            // Adresse pour chaque utilisateur
             Address a = new Address();
             a.setStreet(faker.address().streetAddress());
             a.setCity(faker.address().city());
             a.setZipCode(faker.address().zipCode());
             a.setCountry("France");
             a.setUser(u);
+            a.setIsActive(true);
             addressRepository.save(a);
         }
 
-        // 6. Génération des produits
+        // 6. Génération des produits et Commandes
         List<String> colors = List.of("Noir", "Blanc", "Argent", "Bleu", "Rouge", "Vert");
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 150; i++) {
             Product p = new Product();
-            // Ajout d'un suffixe unique pour éviter les doublons de noms de produits si nécessaire
             p.setProductName(faker.commerce().productName() + " " + faker.random().hex(4));
             p.setBrand(faker.company().name());
             p.setColor(colors.get(random.nextInt(colors.size())));
@@ -143,9 +125,8 @@ public class DataInitializer implements CommandLineRunner {
                 productPictureRepository.save(ppic);
             }
 
-            // 7. Simulation de quelques commandes pour les produits en promo
+            // 7. Commandes massives (tous les 3 produits)
             if (i % 3 == 0) {
-                // Promotion
                 ProductPromotion pp = new ProductPromotion();
                 pp.setProduct(p);
                 pp.setPromotion(flashSale);
@@ -153,29 +134,61 @@ public class DataInitializer implements CommandLineRunner {
                 pp.setEndDate(LocalDateTime.now().plusDays(7));
                 productPromotionRepository.save(pp);
 
-                // Commande factice liée à un utilisateur aléatoire du pool
                 User randomUser = userPool.get(random.nextInt(userPool.size()));
-                // On récupère une adresse de l'utilisateur (on sait qu'il en a une)
                 Address userAddr = addressRepository.findByUserAndIsActiveTrue(randomUser).get(0);
 
-                Order o = new Order();
-                o.setOrderNumber(faker.number().digits(9));
-                o.setTotal(p.getPrice());
-                o.setStatus(1); // 1 = Validée par exemple
-                o.setUser(randomUser);
-                o.setAddress(userAddr);
-                o.setCreatedAt(LocalDateTime.now().minusHours(faker.number().numberBetween(1, 24)));
-                orderRepository.save(o);
+                // Optimisation : On prépare des listes pour insérer en lot (batch)
+                List<Order> ordersToSave = new ArrayList<>();
+                List<OrderLine> linesToSave = new ArrayList<>();
 
-                OrderLine ol = new OrderLine();
-                ol.setOrder(o);
-                ol.setProduct(p);
-                ol.setQuantity(1);
-                ol.setPrice(p.getPrice());
-                orderLineRepository.save(ol);
+                for (int j = 0; j < 15; j++) {
+                    Order o = new Order();
+                    o.setOrderNumber(faker.number().digits(9));
+                    o.setTotal(p.getPrice());
+                    o.setStatus(1);
+                    o.setUser(randomUser);
+                    o.setAddress(userAddr);
+
+                    // Date aléatoire entre 2025 et 2026
+                    java.util.Date randomDate = faker.date().between(startDate, endDate);
+                    o.setCreatedAt(randomDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+
+                    ordersToSave.add(o);
+                }
+
+                // Sauvegarde des commandes par lot
+                orderRepository.saveAll(ordersToSave);
+
+                // Création des lignes de commande liées
+                for (Order o : ordersToSave) {
+                    OrderLine ol = new OrderLine();
+                    ol.setOrder(o);
+                    ol.setProduct(p);
+                    ol.setQuantity(faker.number().numberBetween(1, 5));
+                    ol.setPrice(p.getPrice());
+                    linesToSave.add(ol);
+                }
+                orderLineRepository.saveAll(linesToSave);
+                System.out.println("Batch inséré pour produit : " + p.getProductName());
             }
         }
 
-        System.out.println(">> Fake Data générée avec succès (Admin, Users, Products, Orders) !");
+        System.out.println(">> Fake Data générée avec succès !");
+    }
+
+    private void createDefaultUsers(java.util.Set<String> usedEmails) {
+        if (userRepository.findByEmail("admin@admin.com").isEmpty()) {
+            User admin = new User();
+            admin.setRole(UserRole.ADMIN);
+            admin.setEmail("admin@admin.com");
+            admin.setPassword(passwordEncoder.encode("adminadmin"));
+            admin.setFirstName("admin");
+            admin.setLastName("admin");
+            admin.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
+            admin.setCreatedAt(LocalDateTime.now());
+            admin.setIsActivated(true);
+            userRepository.save(admin);
+            usedEmails.add(admin.getEmail());
+        }
     }
 }

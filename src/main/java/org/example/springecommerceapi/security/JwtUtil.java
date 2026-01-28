@@ -15,11 +15,23 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private int jwtExpirationMs;
     private SecretKey key;
-    // Initializes the key after the class is instantiated and the jwtSecret is injected, 
+    // Initializes the key after the class is instantiated and the jwtSecret is injected,
     // preventing the repeated creation of the key and enhancing performance
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        if (jwtSecret == null) {
+            System.err.println("WARNING: jwt.secret is not set; generating a random signing key for runtime. Set jwt.secret in application.properties for persistent tokens.");
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            return;
+        }
+
+        byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            System.err.println("WARNING: Provided jwt.secret is too short (" + secretBytes.length*8 + " bits). Generating a random signing key for runtime. Set a stronger jwt.secret (at least 256 bits) for persistent tokens.");
+            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        } else {
+            this.key = Keys.hmacShaKeyFor(secretBytes);
+        }
     }
     // Generate JWT token
     public String generateToken(String email) {

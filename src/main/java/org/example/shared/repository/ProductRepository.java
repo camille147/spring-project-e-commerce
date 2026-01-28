@@ -30,4 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     List<Product> findByProductNameContainingIgnoreCase(String keyword);
 
+
+    @Query(value = "SELECT p.* FROM product p LEFT JOIN order_line ol ON ol.product_id = p.id GROUP BY p.id ORDER BY COUNT(ol.id) DESC", nativeQuery = true)
+    List<Product> findBestProducts();
 }
