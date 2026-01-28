@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Remises</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        platine: '#E5E4E2',
+                        anthracite: '#1F1F1F',
+                        'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A',
+                        'body-bg': '#F2F2F2',
+                        'promo-bg': '#FFF7ED',
+                        'promo-text': '#C2410C',
+                    },
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'btn': '50px',
+                        'card': '10px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Style "Cartes Flottantes" */
+        .table-spacing {
+            border-collapse: separate;
+            border-spacing: 0 15px;
+        }
+        .table-row-card td {
+            background-color: white;
+            border-top: 1px solid white;
+            border-bottom: 1px solid white;
+        }
+        .table-row-card td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+            padding-left: 24px;
+        }
+        .table-row-card td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding-right: 24px;
+        }
+    </style>
+</head>
+<body class="bg-body-bg min-h-screen flex text-anthracite font-montserrat">
+
+<div th:replace="~{admin/dashboard :: admin-sidebar}"></div>
+
+<main class="flex-1 lg:ml-72 p-10 bg-body-bg transition-all">
+
+    <div class="flex justify-between items-center mb-10 max-w-7xl mx-auto">
+        <h1 class="text-[35px] font-playfair text-[#18181b] font-bold">Remises</h1>
+
+        <div class="flex gap-4">
+            <button onclick="openModalForCreate()" class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center hover:bg-gray-50 transition">
+                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <div class="overflow-x-auto">
+            <table class="w-full table-spacing">
+                <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Nom de la promotion</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Taux de réduction</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Aperçu</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="text-sm">
+                <tr th:each="p : ${promotions}" class="table-row-card shadow-sm hover:shadow-md transition-shadow duration-200">
+
+                    <td class="py-4 whitespace-nowrap">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-full bg-or-champagne/10 flex items-center justify-center text-or-champagne">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                            </div>
+                            <span class="font-medium text-anthracite text-[15px]" th:text="${p.name}">Soldes d'été</span>
+                        </div>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap">
+                                <span class="text-xl font-bold font-playfair text-anthracite" th:text="${#numbers.formatDecimal(p.discountRate, 0, 'COMMA', 0, 'POINT')} + '%'">
+                                    20%
+                                </span>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full bg-promo-bg text-promo-text text-xs font-bold uppercase tracking-wide border border-orange-100">
+                                    PROMO
+                                </span>
+                    </td>
+
+                    <td class="py-4 whitespace-nowrap text-gray-400">
+                        <div class="flex items-center gap-4">
+                            <button type="button" class="edit-btn text-gray-400 hover:text-or-champagne transition"
+                                    th:attr="data-id=${p.id}" title="Modifier">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+
+                            <form th:action="@{/admin/discounts/delete/{id}(id=${p.id})}" method="post" onsubmit="return confirm('Supprimer cette promotion ?')">
+                                <button type="submit" class="text-gray-400 hover:text-danger-text transition" title="Supprimer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex items-center justify-between mt-8 font-montserrat text-sm text-gray-500">
+            <span th:text="${promotions.size()} + ' promotions trouvées'">0 promotions trouvées</span>
+        </div>
+    </div>
+
+    <div id="promoModal" class="fixed inset-0 hidden items-center justify-center z-[100]">
+        <div class="absolute inset-0 bg-anthracite/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-[20px] shadow-2xl max-w-md w-full z-10 p-8 transform transition-all">
+            <h2 class="font-playfair text-2xl font-bold mb-6 text-anthracite" id="modalTitle">Nouvelle promotion</h2>
+
+            <form id="promoForm" method="post" th:action="@{/admin/discounts/save}">
+                <input type="hidden" name="id" id="m_id" />
+
+                <div class="space-y-5">
+                    <div>
+                        <label class="block mb-2 font-medium font-montserrat">Nom de la promotion</label>
+                        <input name="name" id="m_name" type="text" placeholder="Ex: Soldes d'hiver"
+                               class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none font-montserrat text-[17px] focus:border-anthracite transition-colors" required />
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 font-medium font-montserrat">Taux de remise (%)</label>
+                        <div class="relative">
+                            <input name="discountRate" id="m_discountRate" type="number" step="0.1" min="0" placeholder="Ex: 20"
+                                   class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none font-montserrat text-[17px] focus:border-anthracite transition-colors pr-12" required />
+                            <span class="absolute right-5 top-3.5 text-gray-400 font-bold">%</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 pl-2">Entrez la valeur en pourcentage (ex: 20 pour 20%)</p>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-6 mt-2">
+                        <button type="button" onclick="closeModal()" class="px-6 py-2 rounded-btn text-anthracite hover:bg-gray-100 transition font-medium">Annuler</button>
+                        <button type="submit" class="px-6 py-2 rounded-btn bg-anthracite text-white shadow-lg hover:opacity-90 transition font-medium">Enregistrer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    function openModal() {
+        const modal = document.getElementById('promoModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function openModalForCreate() {
+        document.getElementById('modalTitle').innerText = "Nouvelle promotion";
+        document.getElementById('promoForm').reset();
+        document.getElementById('m_id').value = '';
+        openModal();
+    }
+
+    function closeModal() {
+        document.getElementById('promoModal').classList.remove('flex');
+        document.getElementById('promoModal').classList.add('hidden');
+    }
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = btn.getAttribute('data-id');
+            document.getElementById('modalTitle').innerText = "Modifier la promotion";
+
+            try {
+                const res = await fetch(`/admin/discounts/${id}/data`);
+                const data = await res.json();
+
+                document.getElementById('m_id').value = data.id;
+                document.getElementById('m_name').value = data.name;
+                document.getElementById('m_discountRate').value = data.discountRate;
+
+                openModal();
+            } catch(err) {
+                console.log("Erreur fetch ou mode démo");
+                openModal();
+            }
+        });
+    });
+</script>
+</body>
+</html>
