@@ -18,6 +18,14 @@
     --or-champagne: #D4AF37;
     --obsidienne: #0A0A0A;
     --body-background-color: #F2F2F2;
+
+    --error-bg: #FEF2F2;
+    --error-text: #991B1B;
+    --error-border: #EF4444;
+
+    --success-bg: #F0FDF4;
+    --success-text: #166534;
+    --success-border: #22C55E;
 }
 
 body {
@@ -158,4 +166,47 @@ img {
 
 #register-logo {
     margin-bottom: -20px;
+}
+
+.error, .success {
+    width: 100%;
+    max-width: 450px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    animation: slideDown 0.5s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid #FECACA;
+    border-left: 5px solid var(--error-border);
+}
+
+.success {
+    background-color: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid #BBF7D0;
+    border-left: 5px solid var(--success-border);
+}
+
+/* Animation d'apparition */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
