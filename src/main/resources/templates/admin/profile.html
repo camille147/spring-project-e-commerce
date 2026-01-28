@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Mon Profil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        platine: '#E5E4E2', anthracite: '#1F1F1F', 'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A', 'body-bg': '#F2F2F2', 'success-bg': '#EAFCF2',
+                        'success-text': '#2D9F64', 'danger-bg': '#FFF0F0', 'danger-text': '#E44B4B',
+                    },
+                    fontFamily: { playfair: ['"Playfair Display"', 'serif'], montserrat: ['Montserrat', 'sans-serif'] },
+                    borderRadius: { 'btn': '50px', 'card': '20px' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-body-bg min-h-screen flex text-anthracite font-montserrat">
+
+<div th:replace="~{admin/dashboard :: admin-sidebar}"></div>
+
+<main class="flex-1 lg:ml-72 p-10 bg-body-bg transition-all">
+    <div class="flex justify-between items-center mb-10 max-w-4xl mx-auto">
+        <h1 class="text-[35px] font-playfair text-[#18181b] font-bold">Mon Profil</h1>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+
+        <div class="bg-white rounded-[20px] shadow-sm p-8 flex flex-col md:flex-row gap-10 items-start">
+
+            <div class="flex flex-col items-center gap-4 w-full md:w-1/3 border-b md:border-b-0 md:border-r border-platine pb-8 md:pb-0 md:pr-8">
+                <div class="w-32 h-32 rounded-full bg-anthracite text-or-champagne flex items-center justify-center text-4xl font-playfair font-bold shadow-lg">
+                    <span th:text="${#strings.substring(admin.firstName,0,1) + #strings.substring(admin.lastName,0,1)}">AD</span>
+                </div>
+                <div class="text-center">
+                    <h2 class="text-xl font-bold text-anthracite" th:text="${admin.firstName + ' ' + admin.lastName}">Admin Name</h2>
+                    <span class="inline-block px-3 py-1 mt-2 rounded-full bg-anthracite text-white text-xs font-semibold tracking-wider">ADMINISTRATEUR</span>
+                </div>
+                <div class="w-full mt-4">
+                    <div class="bg-gray-50 rounded-xl p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Membre depuis</p>
+                        <p class="text-sm font-medium mt-1" th:text="${#temporals.format(admin.createdAt, 'dd MMMM yyyy')}">01 Jan 2024</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 w-full">
+
+                <div th:if="${param.success}" class="mb-6 bg-success-bg text-success-text px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Profil mis à jour avec succès.
+                </div>
+                <div th:if="${error}" class="mb-6 bg-danger-bg text-danger-text px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span th:text="${error}">Erreur</span>
+                </div>
+
+                <form th:action="@{/admin/profile/update}" method="post" class="space-y-6">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                            <input type="text" name="firstName" th:value="${admin.firstName}" class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none focus:border-anthracite transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                            <input type="text" name="lastName" th:value="${admin.lastName}" class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none focus:border-anthracite transition" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" name="email" th:value="${admin.email}"
+                               class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none bg-gray-100 text-gray-500 cursor-not-allowed"
+                               readonly>
+                        <p class="text-xs text-gray-400 mt-1 ml-1">L'adresse email ne peut pas être modifiée.</p>
+                    </div>
+
+                    <div class="pt-6 border-t border-platine">
+                        <h3 class="text-lg font-playfair font-bold text-anthracite mb-4">Changer le mot de passe</h3>
+                        <p class="text-xs text-gray-500 mb-4">Laissez vide si vous ne souhaitez pas le modifier.</p>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nouveau mot de passe</label>
+                                <input type="password" name="newPassword" class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none focus:border-anthracite transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Confirmer le mot de passe</label>
+                                <input type="password" name="confirmPassword" class="w-full border-2 border-platine rounded-btn px-5 py-3 outline-none focus:border-anthracite transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        <button type="submit" class="bg-anthracite text-white px-8 py-3 rounded-btn font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

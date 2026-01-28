@@ -73,18 +73,12 @@
 <body class="bg-body-bg min-h-screen flex text-anthracite font-montserrat">
 
 <div th:replace="~{admin/dashboard :: admin-sidebar}"></div>
-<main class="flex-1 ml-64 p-10 bg-body-bg">
+<main class="flex-1 lg:ml-72 p-10 bg-body-bg transition-all">
 
     <div class="flex justify-between items-center mb-10 max-w-7xl mx-auto">
         <h1 class="text-[35px] font-playfair text-[#18181b] font-bold">Produits</h1>
 
         <div class="flex gap-4">
-            <button class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center hover:bg-gray-50 transition !border-0 !p-0">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-            </button>
-
             <button onclick="openModalForCreate()" class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center hover:bg-gray-50 transition !border-0 !p-0">
                 <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -94,6 +88,36 @@
     </div>
 
     <div class="max-w-7xl mx-auto">
+
+        <div class="mb-6">
+            <form method="get" th:action="@{/admin/products}" class="bg-white p-4 rounded-[14px] shadow-sm flex flex-wrap gap-4 items-center">
+
+                <div class="relative flex-1 min-w-[200px]">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input type="text" name="search" th:value="${search}" placeholder="Rechercher (Nom, Ref)..."
+                           class="w-full pl-10 pr-4 py-2 border border-platine rounded-md focus:outline-none focus:border-anthracite transition">
+                </div>
+
+                <div class="relative w-48">
+                    <select name="categoryId" onchange="this.form.submit()" class="w-full appearance-none border border-platine rounded-md px-4 py-2 pr-8 focus:outline-none focus:border-anthracite bg-white cursor-pointer">
+                        <option value="">Toutes catégories</option>
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:text="${c.name}"
+                                th:selected="${c.id == categoryId}"></option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
+
+                <button type="submit" class="px-6 py-2 bg-anthracite text-white rounded-md hover:bg-gray-800 transition shadow-md">Filtrer</button>
+                <a th:href="@{/admin/products}" class="px-4 py-2 text-gray-500 hover:text-anthracite transition underline">Réinitialiser</a>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full table-spacing">
                 <thead>
@@ -106,7 +130,7 @@
                 </thead>
                 <tbody class="text-sm">
                 <tr th:each="p : ${products}" class="table-row-card shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <td class="py-4 whitespace-nowrap">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="h-10 w-10 mr-4 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
                                 <img th:if="${p.defaultPicture != null}" th:src="@{/files/logo.png}" class="h-full w-full object-cover" alt="img">
@@ -116,43 +140,31 @@
                         </div>
                     </td>
 
-                    <td class="py-4 whitespace-nowrap text-anthracite font-medium">
+                    <td class="px-6 py-4 whitespace-nowrap text-anthracite font-medium">
                         <span th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + '€'">4000€</span>
                     </td>
 
-                    <td class="py-4 whitespace-nowrap text-gray-500">
-                        <span th:text="${p.quantity}">July 1, 2025</span>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                        <span th:text="${p.quantity}">10</span>
                     </td>
 
-                    <td class="py-4 whitespace-nowrap">
-                                <span th:if="${p.quantity > 0}" class="inline-flex items-center px-3 py-1 rounded-full bg-success-bg text-success-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-success-text"></span>
-                                    En stock
-                                </span>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span th:if="${p.quantity > 0}" class="inline-flex items-center px-3 py-1 rounded-full bg-success-bg text-success-text text-xs font-semibold gap-2">
+                            <span class="w-2 h-2 rounded-full bg-success-text"></span> En stock
+                        </span>
                         <span th:if="${p.quantity == 0}" class="inline-flex items-center px-3 py-1 rounded-full bg-danger-bg text-danger-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-danger-text"></span>
-                                    Rupture
-                                </span>
+                            <span class="w-2 h-2 rounded-full bg-danger-text"></span> Rupture
+                        </span>
                     </td>
 
-                    <td class="py-4 whitespace-nowrap text-gray-400">
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-400">
                         <div class="flex items-center gap-4">
                             <button type="button" class="edit-btn !border-0 !bg-transparent !p-0 text-gray-400 hover:text-anthracite transition" th:attr="data-id=${p.id}" title="Modifier">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </button>
-
-                            <form th:action="@{/admin/products/delete/{id}(id=${p.id})}" method="post" th:object="${p}" onsubmit="return confirm('Supprimer ce produit ?')" class="flex items-center">
-                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                <input type="hidden" name="page" th:value="${currentPage}" />
-                                <input type="hidden" name="size" th:value="${pageSize}" />
-                                <button type="submit" class="!border-0 !bg-transparent !p-0 text-gray-400 hover:text-danger-text transition" title="Supprimer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </form>
+                            <button type="button" onclick="openDeleteModal(this)" th:data-id="${p.id}" th:data-name="${p.productName}" class="text-gray-400 hover:text-danger-text transition" title="Supprimer">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -162,42 +174,39 @@
 
         <div class="flex items-center justify-between mt-8 font-montserrat text-sm text-gray-500">
             <div class="flex items-center gap-2">
-                <span class="mr-2">Show</span>
+                <span class="mr-2">Afficher</span>
                 <form method="get" th:action="@{/admin/products}">
+                    <input type="hidden" name="search" th:value="${search}" />
+                    <input type="hidden" name="categoryId" th:value="${categoryId}" />
+
                     <select id="page-size" name="size" onchange="this.form.submit()" class="appearance-none bg-white border border-platine rounded-md px-3 py-1 pr-8 focus:outline-none focus:border-anthracite cursor-pointer">
                         <option th:value="10" th:selected="${pageSize == 10}">10</option>
                         <option th:value="25" th:selected="${pageSize == 25}">25</option>
                     </select>
                     <input type="hidden" name="page" th:value="0" />
                 </form>
-                <span class="ml-1">Row</span>
+                <span class="ml-1">Lignes</span>
             </div>
 
             <div class="flex items-center gap-2">
-                <a th:href="@{/admin/products(page=${currentPage - 1}, size=${pageSize})}"
+                <a th:href="@{/admin/products(page=${currentPage - 1}, size=${pageSize}, search=${search}, categoryId=${categoryId})}"
                    th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
                    class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </a>
 
                 <div class="flex items-center gap-2">
-                    <a th:href="@{/admin/products(page=${currentPage - 1}, size=${pageSize})}"
-                       th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
-                       class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                    </a>
-
                     <div class="flex gap-1"
                          th:with="start=${currentPage - 4}, end=${start + 9}, start=${start < 0 ? 0 : start}, end=${end >= totalPages ? totalPages - 1 : end}, start=${end - 9 < 0 ? 0 : end - 9}">
                         <a th:each="i : ${#numbers.sequence(start, end)}"
-                           th:href="@{/admin/products(page=${i}, size=${pageSize})}"
+                           th:href="@{/admin/products(page=${i}, size=${pageSize}, search=${search}, categoryId=${categoryId})}"
                            th:text="${i + 1}"
                            th:classappend="${i == currentPage} ? 'bg-or-champagne text-white' : 'bg-white hover:bg-gray-100'"
                            class="w-8 h-8 flex items-center justify-center rounded transition cursor-pointer">
                         </a>
                     </div>
 
-                    <a th:href="@{/admin/products(page=${currentPage + 1}, size=${pageSize})}"
+                    <a th:href="@{/admin/products(page=${currentPage + 1}, size=${pageSize}, search=${search}, categoryId=${categoryId})}"
                        th:classappend="${currentPage >= totalPages - 1} ? 'pointer-events-none opacity-50' : ''"
                        class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
@@ -220,28 +229,28 @@
                     <div class="grid grid-cols-2 gap-5">
                         <div>
                             <label class="block mb-2 font-medium">Nom</label>
-                            <input name="productName" id="m_productName" type="text" />
+                            <input name="productName" id="m_productName" type="text" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" />
                         </div>
                         <div>
                             <label class="block mb-2 font-medium">Marque</label>
-                            <input name="brand" id="m_brand" type="text" />
+                            <input name="brand" id="m_brand" type="text" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-5">
                         <div>
                             <label class="block mb-2 font-medium">Prix (€)</label>
-                            <input name="price" id="m_price" type="number" step="0.01" />
+                            <input name="price" id="m_price" type="number" step="0.01" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" />
                         </div>
                         <div>
                             <label class="block mb-2 font-medium">Quantité</label>
-                            <input name="quantity" id="m_quantity" type="number" />
+                            <input name="quantity" id="m_quantity" type="number" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" />
                         </div>
                     </div>
 
                     <div>
                         <label class="block mb-2 font-medium">Référence</label>
-                        <input name="reference" id="m_reference" type="text" />
+                        <input name="reference" id="m_reference" type="text" class="w-full border-2 border-platine rounded-btn px-4 py-2 outline-none focus:border-anthracite" />
                     </div>
 
                     <div>
@@ -258,13 +267,46 @@
 
                     <div>
                         <label class="block mb-2 font-medium">Description</label>
-                        <textarea name="description" id="m_description" rows="3" class="border-2 border-platine rounded-[20px] px-5 py-3 outline-none font-montserrat text-[17px] w-full focus:border-anthracite transition-colors"></textarea>
+                        <textarea name="description" id="m_description" rows="3" maxlength="250" class="border-2 border-platine rounded-[20px] px-5 py-3 outline-none font-montserrat text-[17px] w-full focus:border-anthracite transition-colors"></textarea>
+                        <div class="text-right text-xs text-gray-400 mt-1">
+                            <span id="charCount">0</span>/250
+                        </div>
                     </div>
 
                     <div class="flex justify-end gap-3 pt-4 mt-2">
-                        <button type="button" onclick="closeModal()" class="!bg-white !text-anthracite hover:!bg-gray-100">Annuler</button>
-                        <button type="submit" class="shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">Enregistrer</button>
+                        <button type="button" onclick="closeModal()" class="px-5 py-2 rounded-btn border border-gray-200 text-gray-600 hover:bg-gray-100 transition">Annuler</button>
+                        <button type="submit" class="px-5 py-2 rounded-btn bg-anthracite text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all">Enregistrer</button>
                     </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 hidden items-center justify-center z-[110]">
+        <div class="absolute inset-0 bg-anthracite/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="bg-white rounded-[20px] shadow-2xl max-w-sm w-full z-10 p-6 transform transition-all text-center">
+
+            <div class="w-16 h-16 bg-danger-bg rounded-full flex items-center justify-center mx-auto mb-4 text-danger-text">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+
+            <h3 class="font-playfair text-xl font-bold text-anthracite mb-2">Êtes-vous sûr ?</h3>
+            <p class="text-gray-500 text-sm mb-6">
+                Vous allez supprimer le produit <span id="del_prod_name" class="font-bold text-anthracite"></span>. <br>Cette action est irréversible.
+            </p>
+
+            <form id="deleteForm" method="post" action="">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="page" th:value="${currentPage}" />
+                <input type="hidden" name="size" th:value="${pageSize}" />
+
+                <div class="flex justify-center gap-3">
+                    <button type="button" onclick="closeDeleteModal()" class="px-5 py-2.5 rounded-btn border border-gray-200 text-gray-600 hover:bg-gray-50 transition font-medium">
+                        Annuler
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-btn bg-danger-text text-white shadow-lg hover:bg-red-600 transition font-medium">
+                        Oui, supprimer
+                    </button>
                 </div>
             </form>
         </div>
@@ -279,6 +321,26 @@
         modal.classList.add('flex');
     }
 
+    function openDeleteModal(btn) {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+
+        document.getElementById('del_prod_name').innerText = '"' + name + '"';
+
+        const form = document.getElementById('deleteForm');
+        form.action = '/admin/products/delete/' + id;
+
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('flex');
+        modal.classList.add('hidden');
+    }
+
     function openModalForCreate() {
         document.getElementById('m_id').value = '';
         document.getElementById('m_productName').value = '';
@@ -287,6 +349,7 @@
         document.getElementById('m_quantity').value = '';
         document.getElementById('m_reference').value = '';
         document.getElementById('m_description').value = '';
+        if(document.getElementById('charCount')) document.getElementById('charCount').innerText = '0';
         openModal();
     }
 
@@ -295,6 +358,13 @@
         modal.classList.remove('flex');
         modal.classList.add('hidden');
     }
+
+    // Compteur de caractères pour la description
+    document.getElementById('m_description').addEventListener('input', function() {
+        if(document.getElementById('charCount')) {
+            document.getElementById('charCount').innerText = this.value.length;
+        }
+    });
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
@@ -311,6 +381,11 @@
                 document.getElementById('m_quantity').value = data.quantity || '';
                 document.getElementById('m_reference').value = data.reference || '';
                 document.getElementById('m_description').value = data.description || '';
+
+                if(document.getElementById('charCount')) {
+                    document.getElementById('charCount').innerText = (data.description || '').length;
+                }
+
                 if (data.categoryId != null) document.getElementById('m_categoryId').value = data.categoryId;
 
                 openModal();
