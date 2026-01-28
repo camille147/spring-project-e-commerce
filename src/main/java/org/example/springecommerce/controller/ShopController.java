@@ -46,6 +46,8 @@ public class ShopController {
         Specification<Product> spec = ProductSpecification.filterProducts(keyword, categoryId, colors, price);
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 
+
+
         model.addAttribute("product", productPage.getContent());
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);

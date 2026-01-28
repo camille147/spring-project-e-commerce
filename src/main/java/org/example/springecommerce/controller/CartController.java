@@ -55,12 +55,7 @@ public class CartController {
 
         if (quantity <= product.getQuantity() && quantity > 0) {
             if (cart.containsKey(productId)) {
-                // OPTION A : On REMPLACE la quantité (comportement fiche produit classique)
                 cart.get(productId).setQuantity(quantity);
-
-                // OPTION B : Si tu veux garder l'addition mais avec un plafond strict :
-                // int newTotal = Math.min(product.getQuantity(), cart.get(productId).getQuantity() + quantity);
-                // cart.get(productId).setQuantity(newTotal);
             } else {
                 cart.put(productId, new CartItem(product, quantity));
             }
