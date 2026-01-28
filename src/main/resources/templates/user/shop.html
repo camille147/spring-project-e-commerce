@@ -174,28 +174,27 @@
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="flex flex-col items-center space-y-4 pb-10 mt-8">
     <ul class="flex -space-x-px text-sm">
+
         <li>
-            <a th:href="@{/user/shop(page=${currentPage - 1})}"
+            <a th:href="@{/user/shop(page=${currentPage - 1}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
-               class="flex items-center justify-center border border-gray-300 font-medium leading-5 rounded-s-[10px] text-sm px-3 h-9 text-gray-500">
+               class="flex items-center justify-center border border-gray-300 font-medium rounded-s-[10px] text-sm px-3 h-9 text-gray-500">
                 Précédent
             </a>
         </li>
 
         <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-            <a th:href="@{/user/shop(page=${i})}"
+            <a th:href="@{/user/shop(page=${i}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:text="${i + 1}"
-               th:classappend="${currentPage == i}
-                               ? 'z-10 bg-[#1F1F1F] text-white border-[#1F1F1F]'
-                               : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-100'"
+               th:classappend="${currentPage == i} ? 'z-10 bg-[#1F1F1F] text-white border-[#1F1F1F]' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-100'"
                class="flex items-center justify-center border font-medium leading-5 text-sm w-9 h-9 transition-colors">
             </a>
         </li>
 
         <li>
-            <a th:href="@{/user/shop(page=${currentPage + 1})}"
+            <a th:href="@{/user/shop(page=${currentPage + 1}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:classappend="${currentPage == totalPages - 1} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
-               class="flex items-center justify-center border border-gray-300 font-medium leading-5 rounded-e-[10px] text-sm px-3 h-9 text-gray-500">
+               class="flex items-center justify-center border border-gray-300 font-medium rounded-e-[10px] text-sm px-3 h-9 text-gray-500">
                 Suivant
             </a>
         </li>

@@ -53,11 +53,16 @@ public class CartController {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
-        if (cart.containsKey(productId)) {
-            CartItem item = cart.get(productId);
-            item.setQuantity(item.getQuantity() + quantity);
-        } else {
-            cart.put(productId, new CartItem(product, quantity));
+        int currentQtyInCart = cart.containsKey(productId) ? cart.get(productId).getQuantity() : 0;
+
+        // vérif tot panier + nouveau pas sup au stock
+        if (currentQtyInCart + quantity <= product.getQuantity()) {
+            if (cart.containsKey(productId)) {
+                CartItem item = cart.get(productId);
+                item.setQuantity(currentQtyInCart + quantity);
+            } else {
+                cart.put(productId, new CartItem(product, quantity));
+            }
         }
 
         return "redirect:/user/shop";
@@ -81,7 +86,6 @@ public class CartController {
     @PostMapping("/remove")
     public String removeFromCart(HttpSession session, @RequestParam Long itemId) {
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
-
         if (cart != null) {
             cart.remove(itemId);
 
@@ -99,14 +103,19 @@ public class CartController {
                                  @RequestParam String action,
                                  HttpSession session) {
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
+        Product product = productRepository.findById(itemId).orElseThrow();
+
         if (cart != null && cart.containsKey(itemId)) {
             CartItem item = cart.get(itemId);
+
             if ("add".equals(action)) {
-                item.setQuantity(item.getQuantity() + 1);
+                // VERIFICATION : Quantité au panier + 1 doit être <= Stock total
+                if (item.getQuantity() < product.getQuantity()) {
+                    item.setQuantity(item.getQuantity() + 1);
+                }
             } else if ("remove".equals(action) && item.getQuantity() > 1) {
                 item.setQuantity(item.getQuantity() - 1);
             }
-            session.setAttribute("cart", cart);
         }
         return "redirect:/user/cart";
     }
