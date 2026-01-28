@@ -66,57 +66,70 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto no-scrollbar py-8 px-4 space-y-4">
+
         <a th:href="@{/admin/dashboard}"
-           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all group"
-           th:classappend="${currentURI != null && currentURI.contains('/admin/dashboard')} ? ' bg-white/10 text-white shadow-lg border border-white/5' : ' text-gray-400 hover:bg-white/5 hover:text-white'">
-            <svg class="w-6 h-6 text-or-champagne transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group"
+           th:classappend="${activePage == 'dashboard'}
+            ? 'bg-anthracite text-or-champagne shadow-lg shadow-black/50 border border-white/5 translate-x-1'
+            : 'text-gray-400 hover:bg-white/5 hover:text-white'">
+            <svg class="w-6 h-6 transition-colors"
+                 th:classappend="${activePage == 'dashboard'} ? 'text-or-champagne' : 'group-hover:text-or-champagne'"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
             </svg>
-            <span class="font-medium tracking-wide">Statistiques</span>
+            <span class="font-medium tracking-wide" th:classappend="${activePage == 'dashboard'} ? 'font-bold'">Statistiques</span>
         </a>
 
         <a th:href="@{/admin/orders}"
-           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all group"
-           th:classappend="${currentURI != null && currentURI.contains('/admin/orders')} ? ' bg-white/10 text-white shadow-lg border border-white/5' : ' text-gray-400 hover:bg-white/5 hover:text-white'">
+           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group"
+           th:classappend="${activePage == 'orders'}
+            ? 'bg-anthracite text-or-champagne shadow-lg shadow-black/50 border border-white/5 translate-x-1'
+            : 'text-gray-400 hover:bg-white/5 hover:text-white'">
             <svg class="w-6 h-6 transition-colors"
-                 th:classappend="${currentURI != null && currentURI.contains('/admin/orders')} ? ' text-or-champagne' : ' group-hover:text-or-champagne'"
+                 th:classappend="${activePage == 'orders'} ? 'text-or-champagne' : 'group-hover:text-or-champagne'"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
             </svg>
-            <span class="font-medium tracking-wide">Commandes</span>
+            <span class="font-medium tracking-wide" th:classappend="${activePage == 'orders'} ? 'font-bold'">Commandes</span>
         </a>
 
         <a th:href="@{/admin/discounts}"
-           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all group"
-           th:classappend="${currentURI != null && currentURI.contains('/admin/discounts')} ? ' bg-white/10 text-white shadow-lg border border-white/5' : ' text-gray-400 hover:bg-white/5 hover:text-white'">
+           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group"
+           th:classappend="${activePage == 'discounts'}
+            ? 'bg-anthracite text-or-champagne shadow-lg shadow-black/50 border border-white/5 translate-x-1'
+            : 'text-gray-400 hover:bg-white/5 hover:text-white'">
             <svg class="w-6 h-6 transition-colors"
-                 th:classappend="${currentURI != null && currentURI.contains('/admin/discounts')} ? ' text-or-champagne' : ' group-hover:text-or-champagne'"
+                 th:classappend="${activePage == 'discounts'} ? 'text-or-champagne' : 'group-hover:text-or-champagne'"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span class="font-medium tracking-wide">Remises</span>
+            <span class="font-medium tracking-wide" th:classappend="${activePage == 'discounts'} ? 'font-bold'">Remises</span>
         </a>
 
         <a th:href="@{/admin/products}"
-           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all group"
-           th:classappend="${currentURI != null && currentURI.contains('/admin/products')} ? ' bg-white/10 text-white shadow-lg border border-white/5' : ' text-gray-400 hover:bg-white/5 hover:text-white'">
+           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group"
+           th:classappend="${activePage == 'products'}
+            ? 'bg-anthracite text-or-champagne shadow-lg shadow-black/50 border border-white/5 translate-x-1'
+            : 'text-gray-400 hover:bg-white/5 hover:text-white'">
             <svg class="w-6 h-6 transition-colors"
-                 th:classappend="${currentURI != null && currentURI.contains('/admin/products')} ? ' text-or-champagne' : ' group-hover:text-or-champagne'"
+                 th:classappend="${activePage == 'products'} ? 'text-or-champagne' : 'group-hover:text-or-champagne'"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
             </svg>
-            <span class="font-medium tracking-wide">Produits</span>
+            <span class="font-medium tracking-wide" th:classappend="${activePage == 'products'} ? 'font-bold'">Produits</span>
         </a>
 
         <a th:href="@{/admin/users}"
-           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all group"
-           th:classappend="${currentURI != null && currentURI.contains('/admin/users')} ? ' bg-white/10 text-white shadow-lg border border-white/5' : ' text-gray-400 hover:bg-white/5 hover:text-white'">
+           class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group"
+           th:classappend="${activePage == 'users'}
+            ? 'bg-anthracite text-or-champagne shadow-lg shadow-black/50 border border-white/5 translate-x-1'
+            : 'text-gray-400 hover:bg-white/5 hover:text-white'">
             <svg class="w-6 h-6 transition-colors"
-                 th:classappend="${currentURI != null && currentURI.contains('/admin/users')} ? ' text-or-champagne' : ' group-hover:text-or-champagne'"
+                 th:classappend="${activePage == 'users'} ? 'text-or-champagne' : 'group-hover:text-or-champagne'"
                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
             </svg>
-            <span class="font-medium tracking-wide">Utilisateurs</span>
+            <span class="font-medium tracking-wide" th:classappend="${activePage == 'users'} ? 'font-bold'">Utilisateurs</span>
         </a>
     </nav>
 
