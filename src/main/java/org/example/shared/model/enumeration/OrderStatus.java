@@ -4,8 +4,7 @@ public enum OrderStatus {
     PENDING(0, "En attente"),
     PAID(1, "Payée"),
     SHIPPED(2, "Expédiée"),
-    DELIVERED(3, "Livrée"),
-    CANCELED(4, "Annulée");
+    DELIVERED(3, "Livrée");
 
     private final int code;
     private final String label;

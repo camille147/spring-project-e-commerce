@@ -4,62 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Commandes</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        platine: '#E5E4E2',
-                        anthracite: '#1F1F1F',
-                        'or-champagne': '#D4AF37',
-                        obsidienne: '#0A0A0A',
-                        'body-bg': '#F2F2F2',
-
-                        'status-pending-bg': '#FEF3C7',
-                        'status-pending-text': '#D97706',
-                        'status-shipped-bg': '#DBEAFE',
-                        'status-shipped-text': '#2563EB',
-                        'status-delivered-bg': '#DCFCE7',
-                        'status-delivered-text': '#16A34A',
-                        'status-cancelled-bg': '#FEE2E2',
-                        'status-cancelled-text': '#DC2626',
+                        platine: '#E5E4E2', anthracite: '#1F1F1F', 'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A', 'body-bg': '#F2F2F2', 'sidebar-bg': '#18181b',
+                        'status-pending-bg': '#FEF3C7', 'status-pending-text': '#D97706',
+                        'status-shipped-bg': '#DBEAFE', 'status-shipped-text': '#2563EB',
+                        'status-delivered-bg': '#DCFCE7', 'status-delivered-text': '#16A34A',
+                        'status-paid-bg': '#E0E7FF', 'status-paid-text': '#4338CA',
                     },
-                    fontFamily: {
-                        playfair: ['"Playfair Display"', 'serif'],
-                        montserrat: ['Montserrat', 'sans-serif'],
-                    },
-                    borderRadius: {
-                        'btn': '50px',
-                        'card': '10px',
-                    }
+                    fontFamily: { playfair: ['"Playfair Display"', 'serif'], montserrat: ['Montserrat', 'sans-serif'] },
+                    borderRadius: { 'btn': '50px', 'card': '20px' }
                 }
             }
         }
     </script>
     <style>
-        .table-spacing {
-            border-collapse: separate;
-            border-spacing: 0 15px;
-        }
-        .table-row-card td {
-            background-color: white;
-            border-top: 1px solid white;
-            border-bottom: 1px solid white;
-        }
-        .table-row-card td:first-child {
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
-            padding-left: 24px;
-        }
-        .table-row-card td:last-child {
-            border-top-right-radius: 8px;
-            border-bottom-right-radius: 8px;
-            padding-right: 24px;
-        }
+        .table-spacing { border-collapse: separate; border-spacing: 0 15px; }
+        .table-row-card td { background-color: white; border-top: 1px solid white; border-bottom: 1px solid white; }
+        .table-row-card td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; padding-left: 24px; }
+        .table-row-card td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; padding-right: 24px; }
     </style>
 </head>
 <body class="bg-body-bg min-h-screen flex text-anthracite font-montserrat">
@@ -67,93 +36,71 @@
 <div th:replace="~{admin/dashboard :: admin-sidebar}"></div>
 
 <main class="flex-1 lg:ml-72 p-10 bg-body-bg transition-all">
-
     <div class="flex justify-between items-center mb-10 max-w-7xl mx-auto">
         <h1 class="text-[35px] font-playfair text-[#18181b] font-bold">Commandes</h1>
-
-        <div class="flex gap-4">
-            <form action="#" class="relative hidden md:block">
-                <input type="text" placeholder="Rechercher ID, Client..." class="pl-4 pr-10 py-3 rounded-[14px] border-none shadow-sm outline-none focus:ring-2 focus:ring-or-champagne transition w-64">
-                <svg class="w-5 h-5 text-gray-400 absolute right-3 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-            </form>
-
-            <button class="w-12 h-12 bg-white rounded-[14px] shadow-sm flex items-center justify-center hover:bg-gray-50 transition">
-                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-            </button>
-        </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
+        <div class="mb-6">
+            <form method="get" th:action="@{/admin/orders}" class="flex flex-wrap gap-3 items-center">
+                <input type="text" name="client" placeholder="Client (nom/email)" th:value="${client}" class="border border-platine rounded-md px-3 py-2" />
+                <select name="status" class="border border-platine rounded-md px-3 py-2">
+                    <option value="" th:selected="${statusFilter == null}">Tous statuts</option>
+                    <option th:each="s : ${T(org.example.shared.model.enumeration.OrderStatus).values()}"
+                            th:value="${s.code}"
+                            th:text="${s.label}"
+                            th:selected="${statusFilter != null and statusFilter == s.code}"></option>
+                </select>
+                <input type="text" name="number" placeholder="N° commande" th:value="${number}" class="border border-platine rounded-md px-3 py-2" />
+                <button type="submit" class="px-4 py-2 rounded-btn bg-anthracite text-white">Rechercher</button>
+                <a th:href="@{/admin/orders}" class="px-4 py-2 rounded-btn border border-platine">Réinitialiser</a>
+            </form>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="w-full table-spacing">
                 <thead>
                 <tr>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Commande</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Client</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Montant</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 font-montserrat uppercase tracking-wider">Actions</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Commande</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Client</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Montant</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
                 </thead>
                 <tbody class="text-sm">
-                <tr th:each="o : ${orders}" class="table-row-card shadow-sm hover:shadow-md transition-shadow duration-200">
-
+                <tr th:each="o : ${orders}" class="table-row-card shadow-sm hover:shadow-md transition-shadow">
+                    <td class="py-4 whitespace-nowrap"><span class="font-bold" th:text="'#' + ${o.orderNumber}">#000</span></td>
                     <td class="py-4 whitespace-nowrap">
-                        <span class="font-bold text-anthracite" th:text="'#' + ${o.orderNumber}">#CMD-8329</span>
-                    </td>
-
-                    <td class="py-4 whitespace-nowrap">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-platine flex items-center justify-center text-xs font-bold text-anthracite">
-                                <span th:text="${#strings.substring(o.customerName,0,1)}">J</span>
-                            </div>
-                            <div class="flex flex-col">
-                                <span class="font-medium text-anthracite" th:text="${o.customerName}">Jean Dupont</span>
-                                <span class="text-xs text-gray-400" th:text="${o.customerEmail}">jean@mail.com</span>
-                            </div>
+                        <div class="flex flex-col">
+                            <span class="font-medium" th:text="${o.user != null ? o.user.firstName + ' ' + o.user.lastName : 'Inconnu'}">Nom</span>
+                            <span class="text-xs text-gray-400" th:text="${o.user != null ? o.user.email : ''}">Email</span>
                         </div>
                     </td>
-
-                    <td class="py-4 whitespace-nowrap text-gray-500">
-                        <span th:text="${#temporals.format(o.orderDate, 'dd MMM yyyy')}">Oct 24, 2025</span>
+                    <td class="py-4 whitespace-nowrap font-medium">
+                        <span th:text="${#numbers.formatDecimal(o.total, 1, 'COMMA', 2, 'POINT')} + ' €'">0.00 €</span>
                     </td>
-
-                    <td class="py-4 whitespace-nowrap font-medium text-anthracite">
-                        <span th:text="${#numbers.formatDecimal(o.totalAmount, 0, 'COMMA', 2, 'POINT')} + ' €'">1 250,00 €</span>
-                    </td>
-
                     <td class="py-4 whitespace-nowrap">
-                                <span th:if="${o.status == 'PENDING'}" class="inline-flex items-center px-3 py-1 rounded-full bg-status-pending-bg text-status-pending-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-status-pending-text"></span> En cours
-                                </span>
-                        <span th:if="${o.status == 'SHIPPED'}" class="inline-flex items-center px-3 py-1 rounded-full bg-status-shipped-bg text-status-shipped-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-status-shipped-text"></span> Expédié
-                                </span>
-                        <span th:if="${o.status == 'DELIVERED'}" class="inline-flex items-center px-3 py-1 rounded-full bg-status-delivered-bg text-status-delivered-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-status-delivered-text"></span> Livré
-                                </span>
-                        <span th:if="${o.status == 'CANCELLED'}" class="inline-flex items-center px-3 py-1 rounded-full bg-status-cancelled-bg text-status-cancelled-text text-xs font-semibold gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-status-cancelled-text"></span> Annulé
-                                </span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold gap-2"
+                              th:classappend="${o.status == 0} ? ' bg-status-pending-bg text-status-pending-text' :
+                                             (${o.status == 1} ? ' bg-status-paid-bg text-status-paid-text' :
+                                             (${o.status == 2} ? ' bg-status-shipped-bg text-status-shipped-text' : ' bg-status-delivered-bg text-status-delivered-text'))">
+                            <span class="w-2 h-2 rounded-full"
+                                  th:classappend="${o.status == 0} ? ' bg-status-pending-text' :
+                                                 (${o.status == 1} ? ' bg-status-paid-text' :
+                                                 (${o.status == 2} ? ' bg-status-shipped-text' : ' bg-status-delivered-text'))"></span>
+                            <span th:text="${T(org.example.shared.model.enumeration.OrderStatus).fromCode(o.status).getLabel()}"></span>
+                        </span>
                     </td>
-
-                    <td class="py-4 whitespace-nowrap text-gray-400">
+                    <td class="py-4 whitespace-nowrap">
                         <div class="flex items-center gap-4">
-                            <button type="button" class="edit-btn text-gray-400 hover:text-or-champagne transition"
-                                    th:attr="data-id=${o.id}" title="Gérer la commande">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
+                            <button type="button" class="edit-btn text-gray-400 hover:text-or-champagne" th:attr="data-id=${o.id}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
-
-                            <form th:action="@{/admin/orders/delete/{id}(id=${o.id})}" method="post" onsubmit="return confirm('Supprimer définitivement cette commande ?')">
-                                <button type="submit" class="text-gray-400 hover:text-danger-text transition" title="Supprimer">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
+                            <form th:action="@{/admin/orders/delete/{id}(id=${o.id})}" method="post" onsubmit="return confirm('Supprimer cette commande ?')">
+                                <input type="hidden" name="page" th:value="${currentPage}" />
+                                <button type="submit" class="text-gray-400 hover:text-red-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </form>
                         </div>
@@ -163,100 +110,76 @@
             </table>
         </div>
 
-        <div class="flex items-center justify-between mt-8 font-montserrat text-sm text-gray-500">
+        <div th:if="${totalPages > 0}" class="flex items-center justify-between mt-8 text-sm text-gray-500">
+            <div>Affichage de <span th:text="${orders.size()}">0</span> lignes sur <span th:text="${totalItems}">0</span></div>
             <div class="flex items-center gap-2">
-                <span class="mr-2">Afficher</span>
-                <select class="appearance-none bg-white border border-platine rounded-md px-3 py-1 pr-8 focus:outline-none cursor-pointer">
-                    <option>10</option>
-                    <option>25</option>
-                </select>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">&lt;</a>
-                <span class="w-8 h-8 flex items-center justify-center bg-or-champagne text-white rounded cursor-pointer">1</span>
-                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">2</a>
-                <a href="#" class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">&gt;</a>
+                <a th:href="@{/admin/orders(page=${currentPage - 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
+                   th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
+                   class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </a>
+                <div class="flex gap-1" th:with="start=${(currentPage - 2 < 0) ? 0 : currentPage - 2}, end=${(start + 4 >= totalPages) ? totalPages - 1 : start + 4}">
+                    <a th:each="i : ${#numbers.sequence(start, end)}"
+                       th:href="@{/admin/orders(page=${i}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
+                       th:text="${i + 1}"
+                       th:classappend="${i == currentPage} ? 'bg-or-champagne text-white' : 'bg-white hover:bg-gray-100'"
+                       class="w-8 h-8 flex items-center justify-center rounded transition"></a>
+                </div>
+                <a th:href="@{/admin/orders(page=${currentPage + 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
+                   th:classappend="${currentPage >= totalPages - 1} ? 'pointer-events-none opacity-50' : ''"
+                   class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </a>
             </div>
         </div>
     </div>
 
     <div id="orderModal" class="fixed inset-0 hidden items-center justify-center z-[100]">
-        <div class="absolute inset-0 bg-anthracite/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="bg-white rounded-[20px] shadow-2xl max-w-lg w-full z-10 p-8 transform transition-all">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="font-playfair text-2xl font-bold text-anthracite">Gérer la commande</h2>
-                <span id="m_orderNumber" class="text-sm font-montserrat bg-platine px-3 py-1 rounded-full">#CMD-000</span>
-            </div>
-
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="bg-white rounded-[20px] shadow-2xl max-w-lg w-full z-10 p-8">
+            <h2 class="font-playfair text-2xl font-bold mb-6">Gérer la commande</h2>
             <form id="orderForm" method="post" th:action="@{/admin/orders/update}">
                 <input type="hidden" name="id" id="m_id" />
-
-                <div class="space-y-6">
-                    <div class="bg-gray-50 p-4 rounded-card border border-gray-100">
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Client</label>
-                        <p id="m_customerName" class="font-medium text-anthracite">Jean Dupont</p>
-                        <p id="m_totalAmount" class="text-or-champagne font-bold mt-1">120.00 €</p>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-card">
+                        <p id="m_orderNumber" class="text-sm font-bold text-gray-400">#000</p>
+                        <p id="m_customerName" class="font-medium">Client</p>
+                        <p id="m_totalAmount" class="text-or-champagne font-bold">0.00 €</p>
                     </div>
-
                     <div>
-                        <label class="block mb-2 font-medium">Statut de la commande</label>
-                        <div class="relative">
-                            <select name="status" id="m_status" class="appearance-none w-full border-2 border-platine rounded-btn px-4 py-3 outline-none focus:border-anthracite bg-white transition-colors">
-                                <option value="PENDING">En cours de traitement</option>
-                                <option value="SHIPPED">Expédié</option>
-                                <option value="DELIVERED">Livré</option>
-                                <option value="CANCELLED">Annulé</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                            </div>
-                        </div>
+                        <label class="block mb-2 font-medium">Statut</label>
+                        <select name="status" id="m_status" class="w-full border-2 border-platine rounded-btn px-4 py-3">
+                            <option th:each="s : ${T(org.example.shared.model.enumeration.OrderStatus).values()}"
+                                    th:value="${s.name()}" th:text="${s.label}"></option>
+                        </select>
                     </div>
-
-                    <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" onclick="closeModal()" class="px-5 py-2 rounded-btn text-anthracite hover:bg-gray-100 transition">Annuler</button>
-                        <button type="submit" class="px-5 py-2 rounded-btn bg-anthracite text-white shadow-lg hover:opacity-90 transition">Mettre à jour</button>
+                    <div class="flex justify-end gap-3 pt-4">
+                        <button type="button" onclick="closeModal()" class="px-5 py-2 rounded-btn hover:bg-gray-100">Annuler</button>
+                        <button type="submit" class="px-5 py-2 rounded-btn bg-anthracite text-white">Mettre à jour</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
-
 </main>
 
 <script>
-    function openModal() {
-        const modal = document.getElementById('orderModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-
-    function closeModal() {
-        document.getElementById('orderModal').classList.remove('flex');
-        document.getElementById('orderModal').classList.add('hidden');
-    }
+    function openModal() { document.getElementById('orderModal').classList.replace('hidden', 'flex'); }
+    function closeModal() { document.getElementById('orderModal').classList.replace('flex', 'hidden'); }
 
     document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
+        btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
-
-            try {
-                const res = await fetch(`/admin/orders/${id}/data`);
-                const data = await res.json();
-
-                document.getElementById('m_id').value = data.id;
-                document.getElementById('m_orderNumber').innerText = '#' + data.orderNumber;
-                document.getElementById('m_customerName').innerText = data.customerName;
-                document.getElementById('m_totalAmount').innerText = data.totalAmount + ' €';
-                document.getElementById('m_status').value = data.status;
-
-                openModal();
-            } catch(err) {
-                console.log("Mode démo ou erreur fetch");
-                document.getElementById('m_id').value = id;
-                openModal();
-            }
+            const res = await fetch(`/admin/orders/${id}/data`);
+            const data = await res.json();
+            document.getElementById('m_id').value = data.id;
+            document.getElementById('m_orderNumber').innerText = '#' + data.orderNumber;
+            document.getElementById('m_customerName').innerText = data.customerName;
+            document.getElementById('m_totalAmount').innerText = data.totalAmount.toFixed(2) + ' €';
+            document.getElementById('m_status').value = data.statusEnumName; // Utilise le nom de l'enum
+            openModal();
         });
     });
 </script>
 </body>
+</html>
