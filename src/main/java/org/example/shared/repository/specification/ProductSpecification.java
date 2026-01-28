@@ -8,9 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProductSpecification {
-    public static Specification<Product> filterProducts(List<Long> categoryIds, List<String> colors, Double maxPrice) {
+    public static Specification<Product> filterProducts(String keyword, List<Long> categoryIds, List<String> colors, Double maxPrice) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                String searchPattern = "%" + keyword.toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("productName")), searchPattern)//,
+                        //cb.like(cb.lower(root.get("brand")), searchPattern)
+                ));
+            }
 
             if (categoryIds != null && !categoryIds.isEmpty()) {
                 predicates.add(root.get("category").get("id").in(categoryIds));

@@ -46,17 +46,15 @@
         </span>
     </button>
 </div>
+<div class="flex justify-end mb-6 px-10">
+    <button class="text-white bg-[#1F1F1F] hover:bg-gray-800 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center gap-2"
+            type="button" data-drawer-target="drawer-filters" data-drawer-show="drawer-filters" data-drawer-placement="right" aria-controls="drawer-filters">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+        Filtres & Tri
+    </button>
+</div>
 
 <div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-    <div class="flex justify-between items-center mb-6 px-10">
-        <h1 class="text-2xl font-bold">Boutique</h1>
-        <button class="text-white bg-[#1F1F1F] hover:bg-gray-800 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center gap-2"
-                type="button" data-drawer-target="drawer-filters" data-drawer-show="drawer-filters" data-drawer-placement="right" aria-controls="drawer-filters">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
-            Filtres & Tri
-        </button>
-    </div>
 
     <div id="drawer-filters" class="fixed top-0 right-0 z-40 h-screen p-6 overflow-y-auto transition-transform translate-x-full bg-white w-full md:w-96" tabindex="-1" aria-labelledby="drawer-label">
 
@@ -68,6 +66,7 @@
         </div>
 
         <form th:action="@{/user/shop}" method="get" class="space-y-8">
+            <input type="hidden" name="keyword" th:value="${keyword}" />
 
             <div>
                 <h3 class="text-sm font-bold text-gray-900 mb-3">Trier par</h3>

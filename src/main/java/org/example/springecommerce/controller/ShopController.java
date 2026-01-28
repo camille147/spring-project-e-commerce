@@ -30,6 +30,7 @@ public class ShopController {
     @GetMapping("/user/shop")
     public String displayShop(Model model,
                               @RequestParam(name = "page", defaultValue = "0") int page,
+                              @RequestParam(required = false) String keyword,
                               @RequestParam(required = false) List<Long> categoryId,
                               @RequestParam(required = false) List<String> colors,
                               @RequestParam(required = false) Double price,
@@ -42,10 +43,11 @@ public class ShopController {
 
         Pageable pageable = PageRequest.of(page, 9, sortOrder);
 
-        Specification<Product> spec = ProductSpecification.filterProducts(categoryId, colors, price);
+        Specification<Product> spec = ProductSpecification.filterProducts(keyword, categoryId, colors, price);
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 
         model.addAttribute("product", productPage.getContent());
+        model.addAttribute("keyword", keyword);
         model.addAttribute("selectedColors", colors);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", productPage.getTotalPages());
