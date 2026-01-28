@@ -1,9 +1,11 @@
 package org.example.springecommerce.controller;
 
 import org.example.shared.entityForm.AddressForm;
+import org.example.shared.model.entity.Order;
 import org.example.shared.model.entity.User;
 import org.example.shared.model.service.CustomUserDetails;
 import org.example.shared.repository.AddressRepository;
+import org.example.shared.repository.OrderRepository;
 import org.example.shared.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Controller
 public class UserController {
 
@@ -23,6 +27,9 @@ public class UserController {
 
     @Autowired
     private AddressRepository addressRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
 
     @GetMapping("/user/profile")
@@ -35,7 +42,10 @@ public class UserController {
         User user = userRepository.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
+        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
+
         model.addAttribute("user", user);
+        model.addAttribute("orders", orders);
         model.addAttribute("addressForm", new AddressForm());
 
         return "user/profile";
