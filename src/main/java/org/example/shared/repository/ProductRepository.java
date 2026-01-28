@@ -18,4 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             "WHERE p.id = :id AND (pp.startDate <= CURRENT_TIMESTAMP AND (pp.endDate IS NULL OR pp.endDate >= CURRENT_TIMESTAMP))")
     Optional<Product> findProductWithActivePromotions(@Param("id") Long id);
     List<Product> findByProductNameIgnoreCaseContaining(String name);
+
+    @Query(value = "SELECT p.* FROM product p LEFT JOIN order_line ol ON ol.product_id = p.id GROUP BY p.id ORDER BY COUNT(ol.id) DESC", nativeQuery = true)
+    List<Product> findBestProducts();
 }

@@ -4,7 +4,9 @@ import org.example.shared.entityForm.ProductForm;
 import org.example.shared.model.entity.Category;
 import org.example.shared.model.entity.Product;
 import org.example.shared.repository.CategoryRepository;
+import org.example.shared.repository.OrderRepository;
 import org.example.shared.repository.ProductRepository;
+import org.example.springecommerce.controller.dto.OrderCountByDayDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,8 +16,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import jakarta.validation.Valid;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -27,10 +37,14 @@ public class AdminController {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
     @GetMapping("/admin/dashboard")
     public String adminHome() {
         return "admin/dashboard";
     }
+
 
     @GetMapping("/admin/orders")
     public String adminOrders() {
@@ -133,5 +147,45 @@ public class AdminController {
         return "admin/users";
     }
 
+    @GetMapping("/admin/bestProduct")
+    @ResponseBody
+    public ResponseEntity<List<Product>> bestProduct(){
+        List<Product> best = productRepository.findBestProducts();
+        return ResponseEntity.ok(best);
+    }
+
+    @GetMapping("/admin/products/search")
+    public String searchProduct(Model model, @RequestParam(value = "search", required = false) String search) {
+        model.addAttribute("search", search);
+        return "admin/products";
+    }
+
+    @GetMapping("/admin/dashboard/stats")
+    @ResponseBody
+    public ResponseEntity<List<OrderCountByDayDto>> ordersStats(@RequestParam(value = "month", required = false) Integer month,
+                                                                 @RequestParam(value = "year", required = false) Integer year) {
+        LocalDate now = LocalDate.now();
+        int m = (month != null) ? month : now.getMonthValue();
+        int y = (year != null) ? year : now.getYear();
+
+        List<Object[]> raw = orderRepository.findOrderCountByMonthYear(m, y);Map<Integer, Long> counts = new HashMap<>();
+        for (Object[] row : raw) {
+            Number dayNum = (Number) row[0];
+            Number cntNum = (Number) row[1];
+            int d = dayNum.intValue();
+            long c = cntNum.longValue();
+            counts.put(d, c);
+        }
+
+        YearMonth ym = YearMonth.of(y, m);
+        int daysInMonth = ym.lengthOfMonth();
+        List<OrderCountByDayDto> result = new ArrayList<>();
+        for (int d = 1; d <= daysInMonth; d++) {
+            long c = counts.getOrDefault(d, 0L);
+            result.add(new OrderCountByDayDto(d, c));
+        }
+
+        return ResponseEntity.ok(result);
+    }
 
 }
