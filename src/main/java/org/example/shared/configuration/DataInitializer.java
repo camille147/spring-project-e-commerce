@@ -66,8 +66,8 @@ public class DataInitializer implements CommandLineRunner {
         // 4. Création de l'Admin (Unique)
         User admin = new User();
         admin.setRole(UserRole.ADMIN);
-        admin.setEmail("admin@admin.fr");
-        admin.setPassword(passwordEncoder.encode("admin"));
+        admin.setEmail("admin@admin.com");
+        admin.setPassword(passwordEncoder.encode("adminadmin"));
         admin.setFirstName("Admin");
         admin.setLastName("TechZone");
         admin.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
