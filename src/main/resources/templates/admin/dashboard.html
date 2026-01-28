@@ -58,13 +58,10 @@
 </div>
 
 <aside th:fragment="admin-sidebar" id="sidebar" class="fixed top-0 left-0 z-50 h-screen w-72 bg-obsidienne text-platine transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col border-r border-white/5">
-    <div class="flex items-center justify-center h-32 border-b border-white/5">
-        <div class="relative w-16 h-20 border-2 border-or-champagne p-1 flex items-center justify-center">
-            <span class="font-playfair text-4xl font-bold text-or-champagne italic tracking-tighter" style="text-shadow: 2px 2px 0px #333;">TZ</span>
-            <div class="absolute top-1 left-1 w-full h-full border border-or-champagne opacity-50 pointer-events-none"></div>
-        </div>
-    </div>
 
+    <div class="flex items-center justify-center h-32 border-b border-white/5">
+        <img src="../../static/files/logo.png" alt="TechZone Logo" class="h-20 w-auto object-contain">
+    </div>
     <nav class="flex-1 overflow-y-auto no-scrollbar py-8 px-4 space-y-4">
         <a th:href="@{/admin/dashboard}" class="flex items-center gap-4 px-4 py-4 bg-white/10 rounded-xl text-white shadow-lg transition-all border border-white/5 group">
             <svg class="w-6 h-6 text-or-champagne transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,6 +274,7 @@
             series: [{
                 name: 'Ventes',
                 data: [5000, 7000, 6000, 12000, 8000, 14000, 11000, 17000, 6000, 19000, 14000, 15000]
+            }],
             chart: {
                 height: 350,
                 type: 'area',
