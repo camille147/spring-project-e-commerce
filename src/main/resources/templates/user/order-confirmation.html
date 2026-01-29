@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Commande Confirmée - TechZone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        platine: '#E5E4E2',
+                        anthracite: '#1F1F1F',
+                        'or-champagne': '#D4AF37',
+                        obsidienne: '#0A0A0A',
+                        'body-bg': '#F2F2F2',
+                    },
+                    fontFamily: {
+                        playfair: ['"Playfair Display"', 'serif'],
+                        montserrat: ['Montserrat', 'sans-serif'],
+                    },
+                    borderRadius: { 'pill': '50px' }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes check-pop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-check { animation: check-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body class="bg-body-bg font-montserrat text-anthracite">
+
+<div th:replace="~{user/navbar :: navbar-user}"></div>
+
+<main class="max-w-4xl mx-auto px-4 py-12">
+
+    <div class="bg-white rounded-2xl shadow-xl border border-platine overflow-hidden text-center mb-8 relative">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-anthracite via-or-champagne to-anthracite"></div>
+
+        <div class="p-10">
+            <div class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-check">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+
+            <h1 class="font-playfair font-bold text-3xl text-obsidienne mb-2">Merci, <span th:text="${order.user.firstName}">Prénom</span> !</h1>
+            <p class="text-gray-500 font-medium text-lg">Votre commande <span class="font-mono font-bold text-anthracite" th:text="'#' + ${order.orderNumber}">#REF</span> a bien été reçue.</p>
+            <p class="text-sm text-gray-400 mt-2">Un email de confirmation a été envoyé à <span th:text="${order.user.email}">email</span>.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div class="md:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-platine shadow-sm overflow-hidden">
+                <div class="p-6 border-b border-platine">
+                    <h2 class="font-playfair font-bold text-xl text-obsidienne">Articles commandés</h2>
+                </div>
+                <div class="divide-y divide-platine">
+                    <div th:each="line : ${order.orderLines}" class="p-6 flex items-center gap-4">
+                        <div class="w-16 h-16 bg-gray-50 rounded-lg border border-platine p-1 flex-shrink-0">
+                            <img th:src="${line.product.defaultPicture != null ? line.product.defaultPicture.pictureUrl : '/files/placeholder.png'}"
+                                 class="w-full h-full object-contain mix-blend-multiply">
+                        </div>
+
+                        <div class="flex-1">
+                            <h3 class="font-bold text-anthracite text-sm" th:text="${line.product.productName}">Nom du produit</h3>
+                            <p class="text-xs text-gray-500">Marque : <span th:text="${line.product.brand}">Marque</span></p>
+                        </div>
+
+                        <div class="text-right">
+                            <p class="font-bold text-or-champagne text-sm" th:text="${#numbers.formatDecimal(line.price * line.quantity, 1, 2)} + ' €'">0.00 €</p>
+                            <p class="text-xs text-gray-500">Qté: <span th:text="${line.quantity}">1</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-1 space-y-6">
+
+            <div class="bg-white rounded-xl border border-platine p-6 shadow-sm">
+                <h3 class="font-playfair font-bold text-lg text-obsidienne mb-4 border-b border-platine pb-2">Livraison</h3>
+                <div class="text-sm text-gray-600 leading-relaxed">
+                    <p class="font-bold text-anthracite mb-1" th:text="${order.user.firstName + ' ' + order.user.lastName}">Nom Client</p>
+                    <p th:text="${order.address?.street}">123 Rue Exemple</p>
+                    <p><span th:text="${order.address?.zipCode}">75000</span> <span th:text="${order.address?.city}">Paris</span></p>
+                    <p class="uppercase text-xs font-bold mt-1 tracking-widest text-gray-400" th:text="${order.address?.country}">FRANCE</p>
+                </div>
+            </div>
+
+            <div class="bg-anthracite rounded-xl p-6 shadow-lg text-platine text-center">
+                <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Montant Total</p>
+                <p class="font-playfair font-bold text-3xl text-or-champagne" th:text="${#numbers.formatDecimal(order.total, 1, 2)} + ' €'">120.00 €</p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <a th:href="@{/user/shop}" class="block w-full py-3 text-center border-2 border-anthracite text-anthracite font-bold rounded-pill hover:bg-anthracite hover:text-white transition-all">
+                    Retour à la boutique
+                </a>
+                <a th:href="@{/user/order/{id}(id=${order.id})}" class="block w-full py-3 text-center text-gray-500 text-sm hover:text-or-champagne underline transition-colors">
+                    Voir le détail de la commande
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</main>
+
+<div th:replace="~{user/footer :: footer-user}"></div>
+
+</body>
+</html>
