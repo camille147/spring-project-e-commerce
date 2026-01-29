@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:x-transition="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="'Commande #' + ${order.orderNumber} + ' - TechZone'">Détail Commande</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            platine: '#E5E4E2',
+            anthracite: '#1F1F1F',
+            'or-champagne': '#D4AF37',
+            obsidienne: '#0A0A0A',
+            'body-bg': '#F2F2F2',
+          },
+          fontFamily: {
+            playfair: ['"Playfair Display"', 'serif'],
+            montserrat: ['Montserrat', 'sans-serif'],
+          },
+          borderRadius: { 'pill': '50px' }
+        }
+      }
+    }
+  </script>
+  <style>[x-cloak] { display: none !important; }</style>
+</head>
+<body class="bg-body-bg font-montserrat text-anthracite">
+
+<div th:replace="~{user/navbar :: navbar-user}"></div>
+
+<main class="max-w-7xl mx-auto px-4 py-12">
+
+  <div class="mb-8">
+    <a th:href="@{/user/profile}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-or-champagne transition-colors">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      Retour au profil
+    </a>
+  </div>
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+    <div>
+      <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Détails de la commande</span>
+      <h1 class="text-3xl font-playfair font-bold text-obsidienne mt-1">
+        Référence <span class="text-or-champagne" th:text="'#' + ${order.orderNumber}">#123456</span>
+      </h1>
+      <p class="text-sm text-gray-500 mt-2">
+        Passée le <span th:text="${#temporals.format(order.createdAt, 'dd MMMM yyyy à HH:mm')}">Date</span>
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+            <span th:text="${order.status == 0 ? 'En attente' : (order.status == 2 ? 'Annulée' : 'Validée')}"
+                  th:class="${order.status == 0 ? 'bg-orange-100 text-orange-700 border-orange-200' : (order.status == 2 ? 'bg-gray-100 text-gray-500 border-gray-200' : 'bg-green-100 text-green-700 border-green-200')}"
+                  class="px-4 py-2 rounded-full text-sm font-bold border uppercase tracking-wide shadow-sm">
+            </span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white rounded-xl border border-platine shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-platine flex justify-between items-center">
+          <h2 class="text-xl font-playfair font-bold text-obsidienne">Articles</h2>
+          <span class="text-sm text-gray-500" th:text="${#lists.size(order.orderLines)} + ' article(s)'">0 articles</span>
+        </div>
+
+        <div class="divide-y divide-platine">
+          <div th:each="line : ${order.orderLines}" class="p-6 flex flex-col sm:flex-row gap-6 hover:bg-gray-50 transition-colors">
+
+            <th:block th:if="${line.product != null}">
+
+              <div class="w-full sm:w-24 h-24 flex-shrink-0 bg-gray-100 rounded-lg border border-platine overflow-hidden">
+                <img th:src="${line.product.defaultPicture != null ? line.product.defaultPicture.pictureUrl : '/files/placeholder.png'}"
+                     alt="Produit" class="w-full h-full object-contain p-2 mix-blend-multiply">
+              </div>
+
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-bold text-anthracite text-lg mb-1">
+                      <a th:href="@{/user/product/{id}(id=${line.product.id})}" class="hover:underline" th:text="${line.product.productName}">Nom</a>
+                    </h3>
+                    <span class="font-bold text-anthracite whitespace-nowrap"
+                          th:text="${#numbers.formatDecimal(line.price * line.quantity, 1, 2)} + ' €'">0.00 €</span>
+                  </div>
+                  <p class="text-sm text-gray-500" th:text="${line.product.brand}">Marque</p>
+                </div>
+
+                <div class="flex items-center justify-between mt-4">
+                  <div class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-md inline-block">
+                    PU: <span th:text="${line.price} + ' €'">0 €</span>
+                  </div>
+                  <div class="text-sm font-semibold text-anthracite">
+                    Qté: <span th:text="${line.quantity}">1</span>
+                  </div>
+                </div>
+              </div>
+            </th:block>
+
+            <th:block th:unless="${line.product != null}">
+              <div class="text-red-500 italic p-4">Produit indisponible.</div>
+            </th:block>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-1 space-y-6">
+
+      <div class="bg-white rounded-xl border border-platine p-6 shadow-sm">
+        <h3 class="text-lg font-playfair font-bold text-obsidienne mb-6">Récapitulatif</h3>
+
+        <div class="flex justify-between items-center py-4 border-t border-platine">
+          <span class="font-bold text-lg text-anthracite">Total</span>
+          <span class="font-bold text-2xl text-or-champagne" th:text="${#numbers.formatDecimal(order.total, 1, 2)} + ' €'">0.00 €</span>
+        </div>
+
+        <div th:if="${order.status == 0}" x-data="{ openCancelModal: false }">
+          <button @click="openCancelModal = true"
+                  class="w-full py-3 bg-white border-2 border-red-100 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all shadow-sm">
+            Annuler la commande
+          </button>
+
+          <template x-teleport="body">
+            <div x-show="openCancelModal" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <div class="fixed inset-0 bg-anthracite/40 backdrop-blur-sm" @click="openCancelModal = false"></div>
+              <div class="relative w-full max-w-sm p-6 bg-white rounded-2xl shadow-2xl z-10 text-center">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Confirmer l'annulation ?</h3>
+                <form th:action="@{/user/orders/{id}/cancel(id=${order.id})}" method="post" class="flex gap-3">
+                  <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                  <button type="button" @click="openCancelModal = false" class="flex-1 py-2 bg-gray-100 rounded-lg">Non</button>
+                  <button type="submit" class="flex-1 py-2 bg-red-600 text-white rounded-lg">Oui, annuler</button>
+                </form>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-platine p-6 shadow-sm">
+        <h3 class="text-lg font-playfair font-bold text-obsidienne mb-4">Livraison</h3>
+        <div class="pl-3 border-l-2 border-or-champagne">
+          <p class="font-bold" th:text="${order.user?.firstName + ' ' + order.user?.lastName}">Nom</p>
+          <p class="text-gray-600 text-sm mt-1">
+            <span th:text="${order.address?.street}">Rue</span><br>
+            <span th:text="${order.address?.zipCode}">CP</span> <span th:text="${order.address?.city}">Ville</span><br>
+            <span th:text="${order.address?.country}">Pays</span>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<div th:replace="~{user/footer :: footer-user}"></div>
+</body>
+</html>
