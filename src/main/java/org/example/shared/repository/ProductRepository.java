@@ -1,7 +1,6 @@
 package org.example.shared.repository;
 
 import org.example.shared.model.entity.Product;
-import org.example.springecommerce.controller.dto.BestSellerDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

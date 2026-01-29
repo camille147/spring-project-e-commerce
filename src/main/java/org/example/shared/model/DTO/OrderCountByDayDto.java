@@ -1,4 +1,4 @@
-package org.example.springecommerce.controller.dto;
+package org.example.shared.model.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

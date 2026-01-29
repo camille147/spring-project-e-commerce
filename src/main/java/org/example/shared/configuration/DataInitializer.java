@@ -1,6 +1,7 @@
 package org.example.shared.configuration;
 
 import com.github.javafaker.Faker;
+import org.example.shared.model.entity.Address;
 import org.example.shared.model.entity.*;
 import org.example.shared.model.enumeration.UserRole;
 import org.example.shared.repository.*;
