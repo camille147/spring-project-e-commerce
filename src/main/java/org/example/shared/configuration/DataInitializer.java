@@ -226,7 +226,7 @@ public class DataInitializer implements CommandLineRunner {
             user2.setEmail("test2@test.com");
             user2.setPassword(passwordEncoder.encode("password2"));
             user2.setFirstName("Manil");
-            user2.setLastName("Le");
+            user2.setLastName("Lede");
             user2.setBirthDate(java.time.LocalDate.of(2001, 1, 1));
             user2.setCreatedAt(LocalDateTime.now());
             user2.setIsActivated(true);
