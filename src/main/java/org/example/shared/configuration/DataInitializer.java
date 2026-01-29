@@ -115,13 +115,11 @@ public class DataInitializer implements CommandLineRunner {
 
             productRepository.save(p);
 
-            int imagesPerGallery = random.nextInt(3) + 2; // Entre 2 et 4 images de galerie par produit
+            int imagesPerGallery = random.nextInt(3) + 2;
             for (int g = 0; g < imagesPerGallery; g++) {
                 ProductPicture ppic = new ProductPicture();
                 ppic.setProduct(p);
 
-                // On sélectionne une image différente de l'image par défaut
-                // Utilisation d'un modulo pour ne pas dépasser la taille du pool (200)
                 int imageIndex = (i + 50 + g) % 200;
                 ppic.setPicture(pool.get(imageIndex));
 
@@ -129,7 +127,6 @@ public class DataInitializer implements CommandLineRunner {
             }
 
             // 7. PROMOTIONS MULTIPLES OU PAS
-            // 60% de chance d'avoir une promo
             if (random.nextDouble() < 0.6) {
                 int nbPromos = random.nextInt(2) + 1; // 1 ou 2 promos
                 for (int k = 0; k < nbPromos; k++) {
@@ -154,7 +151,6 @@ public class DataInitializer implements CommandLineRunner {
                 o.setUser(randomUser);
                 o.setAddress(userAddr);
 
-                // Brider la date : entre 2024 et NOW (pas de futur)
                 java.util.Date randomDate = faker.date().between(startDate, now);
                 o.setCreatedAt(randomDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
                 orderRepository.save(o);
@@ -188,6 +184,24 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(admin);
             usedEmails.add(admin.getEmail());
+
+            User admin2 = new User();
+            admin2.setRole(UserRole.ADMIN);
+            admin2.setEmail("admin@test.com");
+            admin2.setPassword(passwordEncoder.encode("jesuisadmin123!"));
+            admin2.setFirstName("toto");
+            admin2.setLastName("leRigolo");
+            admin2.setBirthDate(java.time.LocalDate.of(2001, 2, 17));
+            admin2.setCreatedAt(LocalDateTime.now());
+            admin2.setIsActivated(true);
+
+            // RGPD
+            admin2.setPrivacyConsent(true);
+            admin2.setConsentDate(LocalDateTime.now());
+
+            userRepository.save(admin2);
+            usedEmails.add(admin2.getEmail());
+
         }
 
         if (userRepository.findByEmail("test@test.com").isEmpty()) {
@@ -207,6 +221,41 @@ public class DataInitializer implements CommandLineRunner {
 
             userRepository.save(user);
             usedEmails.add(user.getEmail());
+
+            User user2 = new User();
+            user2.setRole(UserRole.USER);
+            user2.setEmail("test2@test.com");
+            user2.setPassword(passwordEncoder.encode("password2"));
+            user2.setFirstName("Manil");
+            user2.setLastName("Le");
+            user2.setBirthDate(java.time.LocalDate.of(2001, 1, 1));
+            user2.setCreatedAt(LocalDateTime.now());
+            user2.setIsActivated(true);
+
+            // RGPD
+            user2.setPrivacyConsent(true);
+            user2.setConsentDate(LocalDateTime.now());
+
+            userRepository.save(user2);
+            usedEmails.add(user2.getEmail());
+
+            User user3 = new User();
+            user3.setRole(UserRole.USER);
+            user3.setEmail("test3@test.com");
+            user3.setPassword(passwordEncoder.encode("password3"));
+            user3.setFirstName("Oryo");
+            user3.setLastName("LeRigolo");
+            user3.setBirthDate(java.time.LocalDate.of(2002, 1, 1));
+            user3.setCreatedAt(LocalDateTime.now());
+            user3.setIsActivated(true);
+
+            // RGPD
+            user3.setPrivacyConsent(true);
+            user3.setConsentDate(LocalDateTime.now());
+
+            userRepository.save(user3);
+            usedEmails.add(user3.getEmail());
+
         }
     }
 }
