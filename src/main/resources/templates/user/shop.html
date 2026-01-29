@@ -8,37 +8,32 @@
 <body class="bg-gray-50">
 
 <div th:replace="~{user/navbar :: navbar-user}"></div>
-<div id="gallery" class="relative w-full py-3" data-carousel="slide">
-    <div class="relative h-56 overflow-hidden rounded-lg md:h-96 my-8 bg-white">
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-1.jpg" class="absolute block w-full h-full object-cover" alt="">
+<div class="relative w-full overflow-hidden bg-white border-b border-gray-200 py-8 mb-6">
+    <div class="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-gray-50 to-transparent z-10"></div>
+    <div class="absolute top-0 right-0 w-20 h-full bg-gradient-to-l from-gray-50 to-transparent z-10"></div>
+
+    <div class="flex items-center gap-12 animate-marquee whitespace-nowrap hover:pause">
+
+        <div th:each="brand : ${brands}" class="flex items-center justify-center shrink-0">
+            <span class="text-2xl font-bold text-gray-400 uppercase tracking-widest font-Montserrat hover:text-black transition-colors cursor-default"
+                  th:text="${brand}">
+            </span>
         </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item="active">
-            <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-2.jpg" class="absolute block w-full h-full object-cover" alt="">
+
+        <div th:each="brand : ${brands}" class="flex items-center justify-center shrink-0">
+            <span class="text-2xl font-bold text-gray-400 uppercase tracking-widest font-Montserrat hover:text-black transition-colors cursor-default"
+                  th:text="${brand}">
+            </span>
         </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-3.jpg" class="absolute block w-full h-full object-cover" alt="">
-        </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg" class="absolute block w-full h-full object-cover" alt="">
-        </div>
-        <div class="hidden duration-700 ease-in-out" data-carousel-item>
-            <img src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-5.jpg" class="absolute block w-full h-full object-cover" alt="">
+
+        <div th:each="brand : ${brands}" class="flex items-center justify-center shrink-0">
+            <span class="text-2xl font-bold text-gray-400 uppercase tracking-widest font-Montserrat hover:text-black transition-colors cursor-default"
+                  th:text="${brand}">
+            </span>
         </div>
     </div>
-    <button type="button" class="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-5 h-5 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/></svg>
-            <span class="sr-only">Previous</span>
-        </span>
-    </button>
-    <button type="button" class="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-            <svg class="w-5 h-5 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"/></svg>
-            <span class="sr-only">Next</span>
-        </span>
-    </button>
 </div>
+
 <div class="flex justify-end mb-6 px-10">
     <button class="text-white bg-[#1F1F1F] hover:bg-gray-800 font-medium rounded-lg text-sm px-5 py-2.5 flex items-center gap-2"
             type="button" data-drawer-target="drawer-filters" data-drawer-show="drawer-filters" data-drawer-placement="right" aria-controls="drawer-filters">
@@ -47,7 +42,7 @@
     </button>
 </div>
 
-<div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="p-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
     <div id="drawer-filters" class="fixed top-0 right-0 z-40 h-screen p-6 overflow-y-auto transition-transform translate-x-full bg-white w-full md:w-96" tabindex="-1" aria-labelledby="drawer-label">
 
@@ -165,17 +160,31 @@
 </div>
 
 <nav th:if="${totalPages > 1}" aria-label="Page navigation" class="flex flex-col items-center space-y-4 pb-10 mt-8">
-    <ul class="flex -space-x-px text-sm">
+    <ul class="flex items-center -space-x-px text-sm">
 
         <li>
             <a th:href="@{/user/shop(page=${currentPage - 1}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
                class="flex items-center justify-center border border-gray-300 font-medium rounded-s-[10px] text-sm px-3 h-9 text-gray-500">
-                Précédent
+                <span class="sr-only">Précédent</span>
+                <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 1 1 5l4 4"/>
+                </svg>
             </a>
         </li>
 
-        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+        <li th:if="${startPage > 0}">
+            <a th:href="@{/user/shop(page=0, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
+               class="flex items-center justify-center border border-gray-300 bg-white text-gray-500 hover:bg-gray-100 font-medium text-sm w-9 h-9 transition-colors">
+                1
+            </a>
+        </li>
+
+        <li th:if="${startPage > 1}">
+            <span class="flex items-center justify-center border border-gray-300 bg-white text-gray-500 font-medium text-sm w-9 h-9">...</span>
+        </li>
+
+        <li th:each="i : ${#numbers.sequence(startPage, endPage)}">
             <a th:href="@{/user/shop(page=${i}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:text="${i + 1}"
                th:classappend="${currentPage == i} ? 'z-10 bg-[#1F1F1F] text-white border-[#1F1F1F]' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-100'"
@@ -183,19 +192,45 @@
             </a>
         </li>
 
+        <li th:if="${endPage < totalPages - 2}">
+            <span class="flex items-center justify-center border border-gray-300 bg-white text-gray-500 font-medium text-sm w-9 h-9">...</span>
+        </li>
+
+        <li th:if="${endPage < totalPages - 1}">
+            <a th:href="@{/user/shop(page=${totalPages - 1}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
+               th:text="${totalPages}"
+               class="flex items-center justify-center border border-gray-300 bg-white text-gray-500 hover:bg-gray-100 font-medium text-sm w-9 h-9 transition-colors">
+            </a>
+        </li>
+
         <li>
             <a th:href="@{/user/shop(page=${currentPage + 1}, keyword=${keyword}, categoryId=${categoryId}, colors=${selectedColors}, sort=${sort})}"
                th:classappend="${currentPage == totalPages - 1} ? 'pointer-events-none opacity-50 bg-gray-100' : 'bg-white hover:bg-gray-100'"
                class="flex items-center justify-center border border-gray-300 font-medium rounded-e-[10px] text-sm px-3 h-9 text-gray-500">
-                Suivant
+                <span class="sr-only">Suivant</span>
+                <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                </svg>
             </a>
         </li>
+
     </ul>
 </nav>
 
 <style>
     @font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat.ttf'); }
     .font-Montserrat { font-family: 'Montserrat', sans-serif; }
+
+    @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+    }
+
+    .animate-marquee {
+        display: flex;
+        width: fit-content;
+        animation: marquee 1200s linear infinite;
+    }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
 </body>

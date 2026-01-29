@@ -27,6 +27,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT DISTINCT p.color FROM Product p WHERE p.color IS NOT NULL AND p.isEnabled = true")
     List<String> findAllDistinctColors();
 
+    @Query("SELECT DISTINCT p.brand FROM Product p WHERE p.brand IS NOT NULL")
+    List<String> findAllDistinctBrands();
+
     List<Product> findByProductNameContainingIgnoreCaseOrBrandContainingIgnoreCase(String name, String brand);
 
     List<Product> findByProductNameContainingIgnoreCase(String keyword);
