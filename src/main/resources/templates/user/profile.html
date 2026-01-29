@@ -293,20 +293,36 @@
                                 <td class="px-4 py-4 font-bold text-anthracite font-mono text-xs" th:text="${order.orderNumber}"></td>
                                 <td class="px-4 py-4 text-gray-600 text-xs" th:text="${#temporals.format(order.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td class="px-4 py-4 font-bold text-or-champagne" th:text="${#numbers.formatDecimal(order.total, 1, 2)} + ' €'"></td>
+
                                 <td class="px-4 py-4">
-                        <span th:text="${order.status == 0 ? 'En attente' : (order.status == 2 ? 'Annulée' : 'Validée')}"
-                              th:class="${order.status == 0 ? 'bg-orange-100 text-orange-700' : (order.status == 2 ? 'bg-gray-100 text-gray-400' : 'bg-green-100 text-green-700')}"
-                              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                        </span>
+                                    <span th:text="${order.status == 0 ? 'En attente' :
+                                                   (order.status == 1 ? 'Payée' :
+                                                   (order.status == 2 ? 'Expédiée' :
+                                                   (order.status == 3 ? 'Livrée' :
+                                                   (order.status == 4 ? 'Annulée' : 'Litige'))))}"
+                                          th:class="${order.status == 0 ? 'bg-orange-100 text-orange-700' :
+                                                    (order.status == 1 ? 'bg-blue-100 text-blue-700' :
+                                                    (order.status == 2 ? 'bg-indigo-100 text-indigo-700' :
+                                                    (order.status == 3 ? 'bg-green-100 text-green-700' :
+                                                    (order.status == 4 ? 'bg-red-100 text-red-700' : 'bg-gray-800 text-white'))))}"
+                                          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                                    </span>
                                 </td>
+
                                 <td class="px-4 py-4 text-right">
                                     <div class="flex items-center justify-end gap-3">
-                                        <a th:href="@{/user/order/{id}(id=${order.id})}" class="text-anthracite hover:text-or-champagne transition-colors p-1">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <a th:href="@{/user/order/{id}(id=${order.id})}" class="text-anthracite hover:text-or-champagne transition-colors p-1" title="Voir les détails">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
                                         </a>
+
                                         <form th:if="${order.status == 0}" th:action="@{/user/orders/{id}/cancel(id=${order.id})}" method="post">
-                                            <button type="submit" onclick="return confirm('Annuler cette commande ?')" class="text-red-400 hover:text-red-600 transition-colors p-1">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                                            <button type="submit" onclick="return confirm('Annuler cette commande ?')" class="text-red-400 hover:text-red-600 transition-colors p-1" title="Annuler la commande">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
                                             </button>
                                         </form>
                                     </div>
