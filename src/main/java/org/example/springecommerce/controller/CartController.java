@@ -158,7 +158,7 @@ public class CartController {
 
         session.removeAttribute("cart");
 
-        return "redirect:/user/profile?success=order_confirmed";
+        return "redirect:/user/order/confirmation/" + savedOrder.getId();
     }
 
     @GetMapping("/checkout")
