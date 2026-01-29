@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Component
 public class JwtUtil {
     @Value("${jwt.secret}")
@@ -15,8 +18,6 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private int jwtExpirationMs;
     private SecretKey key;
-    // Initializes the key after the class is instantiated and the jwtSecret is injected,
-    // preventing the repeated creation of the key and enhancing performance
     @PostConstruct
     public void init() {
         if (jwtSecret == null) {
@@ -27,8 +28,16 @@ public class JwtUtil {
 
         byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         if (secretBytes.length < 32) {
-            System.err.println("WARNING: Provided jwt.secret is too short (" + secretBytes.length*8 + " bits). Generating a random signing key for runtime. Set a stronger jwt.secret (at least 256 bits) for persistent tokens.");
-            this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            System.err.println("WARNING: Provided jwt.secret is too short (" + secretBytes.length*8 + " bits). Deriving a 256-bit key with SHA-256; consider using a stronger secret (at least 256 bits) to avoid this step.");
+            try {
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                byte[] hashed = digest.digest(secretBytes);
+                this.key = Keys.hmacShaKeyFor(hashed);
+            } catch (NoSuchAlgorithmException e) {
+                // Should not happen; fallback to random key if SHA-256 is unavailable
+                System.err.println("ERROR: SHA-256 unavailable, falling back to a random JWT key: " + e.getMessage());
+                this.key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            }
         } else {
             this.key = Keys.hmacShaKeyFor(secretBytes);
         }
