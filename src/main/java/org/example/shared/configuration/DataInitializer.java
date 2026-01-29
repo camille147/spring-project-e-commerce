@@ -116,7 +116,12 @@ public class DataInitializer implements CommandLineRunner {
             p.setQuantity(faker.number().numberBetween(5, 50));
             p.setReference("TZ-" + faker.random().hex(8).toUpperCase());
             p.setIsEnabled(true);
-            p.setCategory(random.nextBoolean() ? smartphone : laptop);
+
+            // --- CORRECTION ICI (Liste au lieu d'objet unique) ---
+            Category randomCategory = random.nextBoolean() ? smartphone : laptop;
+            p.setCategories(List.of(randomCategory));
+            // ----------------------------------------------------
+
             p.setDefaultPicture(pool.get(random.nextInt(5)));
             productRepository.save(p);
 
@@ -136,7 +141,11 @@ public class DataInitializer implements CommandLineRunner {
                 productPromotionRepository.save(pp);
 
                 User randomUser = userPool.get(random.nextInt(userPool.size()));
-                Address userAddr = addressRepository.findByUserAndIsActiveTrue(randomUser).get(0);
+                // Sécurité pour éviter index out of bound si l'user n'a pas d'adresse (théoriquement impossible ici mais bon)
+                List<Address> userAddrs = addressRepository.findByUserAndIsActiveTrue(randomUser);
+                if (userAddrs.isEmpty()) continue;
+
+                Address userAddr = userAddrs.get(0);
 
                 List<Order> ordersToSave = new ArrayList<>();
                 List<OrderLine> linesToSave = new ArrayList<>();

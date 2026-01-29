@@ -64,9 +64,8 @@ public class User {
     @Column(nullable = false)
     private boolean privacyConsent = false;
 
-@Column
+    @Column
     private LocalDateTime consentDate;
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Order> orders;

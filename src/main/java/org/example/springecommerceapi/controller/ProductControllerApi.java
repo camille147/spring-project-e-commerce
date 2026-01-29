@@ -12,6 +12,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,6 +50,7 @@ public class ProductControllerApi {
     @PostMapping("/admin/products")
     public ResponseEntity<ProductDto> create(@Valid @RequestBody ProductDto dto) {
         Product p = toEntity(dto);
+        p.setIsEnabled(true);
         Product saved = repository.save(p);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(saved.getId()).toUri();
         return ResponseEntity.created(location).body(toDto(saved));
@@ -68,7 +70,12 @@ public class ProductControllerApi {
     @DeleteMapping("/admin/products/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        repository.deleteById(id);
+        Optional<Product> opt = repository.findById(id);
+        if (opt.isPresent()) {
+            Product p = opt.get();
+            p.setIsEnabled(false);
+            repository.save(p);
+        }
     }
 
     @PatchMapping("/admin/products/{id}/stock")
@@ -101,8 +108,25 @@ public class ProductControllerApi {
         return ResponseEntity.ok(toDto(saved));
     }
 
+    // --- MAPPERS ---
+
     private ProductDto toDto(Product p) {
-        return new ProductDto(p.getId(), p.getProductName(), p.getDescription(), p.getPrice(), p.getQuantity(), p.getCategory() != null ? p.getCategory().getId() : null, p.getIsEnabled(), p.getColor(), p.getBrand(), p.getReference());
+        List<Long> catIds = p.getCategories() != null
+                ? p.getCategories().stream().map(Category::getId).collect(Collectors.toList())
+                : new ArrayList<>();
+
+        return ProductDto.builder()
+                .id(p.getId())
+                .productName(p.getProductName())
+                .description(p.getDescription())
+                .price(p.getPrice())
+                .quantity(p.getQuantity())
+                .categoryIds(catIds)
+                .isEnabled(p.getIsEnabled())
+                .color(p.getColor())
+                .brand(p.getBrand())
+                .reference(p.getReference())
+                .build();
     }
 
     private Product toEntity(ProductDto dto) {
@@ -115,10 +139,14 @@ public class ProductControllerApi {
         p.setColor(dto.getColor());
         p.setBrand(dto.getBrand());
         p.setReference(dto.getReference());
-        if (dto.getCategoryId() != null) {
-            Category c = categoryRepository.findById(dto.getCategoryId()).orElse(null);
-            p.setCategory(c);
+
+        if (dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()) {
+            List<Category> categories = categoryRepository.findAllById(dto.getCategoryIds());
+            p.setCategories(categories);
+        } else {
+            p.setCategories(new ArrayList<>());
         }
+
         return p;
     }
 }

@@ -16,13 +16,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + email));
-
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail()) //username=email
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
+        return userRepository.findByEmail(email)
+                .map(user -> org.springframework.security.core.userdetails.User.builder()
+                        .username(user.getEmail())
+                        .password(user.getPassword())
+                        .roles(user.getRole().name())
+                        .disabled(!user.getIsActivated()) // C'est ici que ton flag isActivated est utilisé
+                        .build())
+                .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé : " + email));
     }
 }

@@ -80,6 +80,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/login")
                         .usernameParameter("email")
+                        .passwordParameter("password")
                         .loginProcessingUrl("/perform_login")
                         .successHandler(roleBasedSuccessHandler())
                         .failureUrl("/login?error=true")

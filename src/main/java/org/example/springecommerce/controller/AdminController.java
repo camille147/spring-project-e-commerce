@@ -6,8 +6,8 @@ import org.example.shared.model.enumeration.OrderStatus;
 import org.example.shared.model.enumeration.UserRole;
 import org.example.shared.repository.*;
 import org.example.springecommerce.controller.dto.BestSellerDto;
+import org.example.springecommerce.controller.dto.CategoryDto;
 import org.example.springecommerce.controller.dto.OrderCountByDayDto;
-// Assurez-vous que le package correspond à l'endroit où vous avez créé votre fichier
 import org.example.springecommerce.controller.dto.PromotionViewDto;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,9 +122,9 @@ public class AdminController {
     public String saveUser(@RequestParam(value = "id", required = false) Long id,
                            @RequestParam("firstName") String firstName,
                            @RequestParam("lastName") String lastName,
-                           @RequestParam(value = "email", required = false) String email,         // Optionnel en update
-                           @RequestParam(value = "birthDate", required = false) LocalDate birthDate, // Optionnel en update
-                           @RequestParam(value = "password", required = false) String password,   // Optionnel en update
+                           @RequestParam(value = "email", required = false) String email,
+                           @RequestParam(value = "birthDate", required = false) LocalDate birthDate,
+                           @RequestParam(value = "password", required = false) String password,
                            @RequestParam(value = "active", required = false) String activeCheckbox,
                            RedirectAttributes redirectAttributes) {
 
@@ -132,25 +132,19 @@ public class AdminController {
         boolean isNew = (id == null);
 
         if (isNew) {
-
             if (birthDate == null || Period.between(birthDate, LocalDate.now()).getYears() < 18) {
                 redirectAttributes.addFlashAttribute("error", "Impossible de créer un administrateur mineur. L'âge minimum est de 18 ans.");
                 return "redirect:/admin/users";
             }
-
             user = new User();
             user.setRole(UserRole.ADMIN);
-
             user.setEmail(email);
             user.setBirthDate(birthDate);
-
             String passToHash = (password != null && !password.isBlank()) ? password : "Password123!";
             user.setPassword(passwordEncoder != null ? passwordEncoder.encode(passToHash) : passToHash);
-
         } else {
             Optional<User> existing = userRepository.findById(id);
             if (existing.isEmpty()) return "redirect:/admin/users";
-
             user = existing.get();
         }
 
@@ -176,15 +170,13 @@ public class AdminController {
             data.put("firstName", u.getFirstName());
             data.put("lastName", u.getLastName());
             data.put("email", u.getEmail());
-            data.put("birthDate", u.getBirthDate()); // AJOUTÉ
+            data.put("birthDate", u.getBirthDate());
             data.put("role", u.getRole().name());
             data.put("active", u.getIsActivated());
             return ResponseEntity.ok(data);
         }
         return ResponseEntity.notFound().build();
     }
-
-
 
     // ==========================================
     //               REMISES (Promotions)
@@ -196,11 +188,9 @@ public class AdminController {
                                  @RequestParam(value = "size", defaultValue = "10") int size,
                                  @RequestParam(value = "search", required = false) String search) {
         model.addAttribute("activePage", "discounts");
-
         Page<Promotion> promoPage = promotionRepository.searchByName(search, PageRequest.of(page, size, Sort.by("id").descending()));
         LocalDateTime now = LocalDateTime.now();
 
-        // Transformation en DTO pour l'affichage
         List<PromotionViewDto> dtos = promoPage.getContent().stream().map(p -> {
             PromotionViewDto dto = new PromotionViewDto();
             dto.setId(p.getId());
@@ -236,10 +226,6 @@ public class AdminController {
         model.addAttribute("search", search);
         model.addAttribute("products", productRepository.findAll());
         model.addAttribute("categories", categoryRepository.findAll());
-
-        // --- AJOUT IMPORTANT : La liste des produits pour le Select Multiple ---
-        model.addAttribute("products", productRepository.findAll());
-
         return "admin/discounts";
     }
 
@@ -251,7 +237,6 @@ public class AdminController {
                                @RequestParam(value = "endDate", required = false) String endDateStr,
                                @RequestParam(value = "productIds", required = false) List<Long> productIds) {
 
-        // 1. Sauvegarde de la Promotion de base
         Promotion p;
         if (id != null) {
             p = promotionRepository.findById(id).orElse(new Promotion());
@@ -262,22 +247,16 @@ public class AdminController {
         p.setDiscountRate(discountRate);
         p = promotionRepository.save(p);
 
-        // 2. Gestion des produits et des dates
-        // Si des dates et des produits sont fournis
         if (startDateStr != null && !startDateStr.isBlank() && endDateStr != null && !endDateStr.isBlank()) {
-
-            // Conversion des dates (String -> LocalDateTime)
             LocalDateTime start = LocalDate.parse(startDateStr).atStartOfDay();
             LocalDateTime end = LocalDate.parse(endDateStr).atTime(23, 59, 59);
 
-            // Nettoyage des anciennes liaisons pour cette promotion (Méthode simple sans changer le repo)
             final Long promoId = p.getId();
             List<ProductPromotion> oldLinks = productPromotionRepository.findAll().stream()
                     .filter(pp -> pp.getPromotion().getId().equals(promoId))
                     .collect(Collectors.toList());
             productPromotionRepository.deleteAll(oldLinks);
 
-            // Création des nouvelles liaisons
             if (productIds != null && !productIds.isEmpty()) {
                 for (Long prodId : productIds) {
                     Optional<Product> prodOpt = productRepository.findById(prodId);
@@ -292,7 +271,6 @@ public class AdminController {
                 }
             }
         }
-
         return "redirect:/admin/discounts";
     }
 
@@ -312,16 +290,13 @@ public class AdminController {
                 .filter(pp -> pp.getPromotion().getId().equals(p.getId()))
                 .collect(Collectors.toList());
 
-        // Liste des IDs produits
         List<Long> productIds = links.stream().map(pp -> pp.getProduct().getId()).collect(Collectors.toList());
         data.put("productIds", productIds);
 
-        // Dates (on prend la première trouvée, supposant qu'elles sont groupées)
         if (!links.isEmpty()) {
             data.put("startDate", links.get(0).getStartDate().toLocalDate().toString());
             data.put("endDate", links.get(0).getEndDate().toLocalDate().toString());
         }
-
         return ResponseEntity.ok(data);
     }
 
@@ -364,7 +339,8 @@ public class AdminController {
                 form.setQuantity(p.getQuantity());
                 form.setDescription(p.getDescription());
                 form.setReference(p.getReference());
-                form.setCategoryId(p.getCategory() != null ? p.getCategory().getId() : null);
+                form.setColor(p.getColor());
+                form.setCategoryIds(p.getCategories().stream().map(Category::getId).collect(Collectors.toList()));
             }
         }
         model.addAttribute("productForm", form);
@@ -379,17 +355,26 @@ public class AdminController {
             model.addAttribute("categories", categoryRepository.findAll());
             return "admin/product-edit";
         }
+
         Product p = (form.getId() != null) ? productRepository.findById(form.getId()).orElse(new Product()) : new Product();
+
         p.setProductName(form.getProductName());
         p.setBrand(form.getBrand());
+        p.setColor(form.getColor());
         p.setPrice(form.getPrice());
         p.setQuantity(form.getQuantity());
         p.setDescription(form.getDescription());
         p.setReference(form.getReference());
-        if (form.getCategoryId() != null) {
-            Category c = categoryRepository.findById(form.getCategoryId()).orElse(null);
-            p.setCategory(c);
+
+        if (p.getIsEnabled() == null) p.setIsEnabled(true);
+
+        if (form.getCategoryIds() != null && !form.getCategoryIds().isEmpty()) {
+            List<Category> selectedCats = categoryRepository.findAllById(form.getCategoryIds());
+            p.setCategories(selectedCats);
+        } else {
+            p.setCategories(new ArrayList<>());
         }
+
         productRepository.save(p);
         return "redirect:/admin/products";
     }
@@ -398,7 +383,12 @@ public class AdminController {
     public String deleteProduct(@PathVariable("id") Long id,
                                 @RequestParam(value = "page", defaultValue = "0") int page,
                                 @RequestParam(value = "size", defaultValue = "10") int size) {
-        productRepository.deleteById(id);
+        Optional<Product> opt = productRepository.findById(id);
+        if (opt.isPresent()) {
+            Product p = opt.get();
+            p.setIsEnabled(false);
+            productRepository.save(p);
+        }
         return String.format("redirect:/admin/products?page=%d&size=%d", page, size);
     }
 
@@ -411,39 +401,51 @@ public class AdminController {
             form.setId(p.getId());
             form.setProductName(p.getProductName());
             form.setBrand(p.getBrand());
+            form.setColor(p.getColor());
             form.setPrice(p.getPrice());
             form.setQuantity(p.getQuantity());
             form.setDescription(p.getDescription());
             form.setReference(p.getReference());
-            form.setCategoryId(p.getCategory() != null ? p.getCategory().getId() : null);
+
+            List<Long> catIds = p.getCategories().stream()
+                    .map(Category::getId)
+                    .collect(Collectors.toList());
+            form.setCategoryIds(catIds);
+
             return ResponseEntity.ok(form);
         }
         return ResponseEntity.notFound().build();
     }
 
-    // --- COMMANDES (Orders) ---
     @GetMapping("/admin/orders")
     public String adminOrders(Model model,
                               @RequestParam(value = "page", defaultValue = "0") int page,
                               @RequestParam(value = "size", defaultValue = "10") int size,
                               @RequestParam(value = "client", required = false) String client,
                               @RequestParam(value = "status", required = false) Integer status,
-                              @RequestParam(value = "number", required = false) String number) {
+                              @RequestParam(value = "number", required = false) String number,
+                              @RequestParam(value = "date", required = false) LocalDate date) { // Ajout du paramètre
+
         model.addAttribute("activePage", "orders");
         Page<Order> ordersPage;
-        if ((client != null && !client.isBlank()) || status != null || (number != null && !number.isBlank())) {
-            ordersPage = orderRepository.searchOrders(client, status, number, PageRequest.of(page, size, Sort.by("id").descending()));
+
+        if ((client != null && !client.isBlank()) || status != null || (number != null && !number.isBlank()) || date != null) {
+            ordersPage = orderRepository.searchOrders(client, status, number, date, PageRequest.of(page, size, Sort.by("id").descending()));
         } else {
             ordersPage = orderRepository.findAll(PageRequest.of(page, size, Sort.by("id").descending()));
         }
+
         model.addAttribute("orders", ordersPage.getContent());
         model.addAttribute("currentPage", ordersPage.getNumber());
         model.addAttribute("totalPages", ordersPage.getTotalPages());
         model.addAttribute("pageSize", ordersPage.getSize());
         model.addAttribute("totalItems", ordersPage.getTotalElements());
+
         model.addAttribute("client", client);
         model.addAttribute("statusFilter", status);
         model.addAttribute("number", number);
+        model.addAttribute("dateFilter", date);
+
         return "admin/orders";
     }
 
@@ -488,8 +490,7 @@ public class AdminController {
 
     @GetMapping("/admin/profile")
     public String adminProfile(Model model, Principal principal) {
-        model.addAttribute("activePage", "profile"); // Pour le menu (optionnel si vous l'ajoutez)
-
+        model.addAttribute("activePage", "profile");
         if (principal != null) {
             String email = principal.getName();
             Optional<User> adminOpt = userRepository.findByEmail(email);
@@ -498,7 +499,7 @@ public class AdminController {
                 return "admin/profile";
             }
         }
-        return "redirect:/login"; // Sécurité si non connecté
+        return "redirect:/login";
     }
 
     @PostMapping("/admin/profile/update")
@@ -510,7 +511,6 @@ public class AdminController {
                                      @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
                                      Principal principal,
                                      Model model) {
-
         if (principal == null) return "redirect:/login";
 
         String currentEmail = principal.getName();
@@ -518,12 +518,9 @@ public class AdminController {
 
         if (adminOpt.isPresent()) {
             User admin = adminOpt.get();
-
             admin.setFirstName(firstName);
             admin.setLastName(lastName);
-
             if (newPassword != null && !newPassword.isBlank()) {
-
                 if (newPassword.equals(confirmPassword)) {
                     admin.setPassword(passwordEncoder.encode(newPassword));
                 } else {
@@ -532,10 +529,37 @@ public class AdminController {
                     return "admin/profile";
                 }
             }
-
             userRepository.save(admin);
         }
-
         return "redirect:/admin/profile?success";
+    }
+
+
+    @PostMapping("/admin/categories/create")
+    @ResponseBody
+    public ResponseEntity<CategoryDto> createCategory(@RequestParam("name") String name,
+                                                      @RequestParam(value = "parentId", required = false) Long parentId) {
+        if (name == null || name.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Category category = new Category();
+        category.setName(name);
+
+        if (parentId != null) {
+            Optional<Category> parentOpt = categoryRepository.findById(parentId);
+            parentOpt.ifPresent(category::setParentCategory);
+        }
+
+        Category saved = categoryRepository.save(category);
+
+        CategoryDto dto = new CategoryDto();
+        dto.setId(saved.getId());
+        dto.setName(saved.getName());
+        if (saved.getParentCategory() != null) {
+            dto.setParentCategoryId(saved.getParentCategory().getId());
+        }
+
+        return ResponseEntity.ok(dto);
     }
 }

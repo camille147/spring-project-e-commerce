@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -48,9 +49,13 @@ public class Product {
     @NotBlank(message = "The reference product is mandatory")
     private String reference;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "product_category_rel",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "default_picture_id")
