@@ -1,10 +1,13 @@
 package org.example.springecommerce.controller;
 
+import jakarta.transaction.Transactional;
 import org.example.shared.model.entity.Order;
 import org.example.shared.model.service.OrderService;
 import org.example.shared.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -29,12 +32,27 @@ public class OrderController {
             return "redirect:/user/profile?error=unauthorized";
         }
 
-        // annulation qu esi status en attente ou payée
+        // annulation que si status en attente ou payée
         if (order.getStatus() == 0 || order.getStatus() == 1) {
             orderService.cancelOrder(order);
             return "redirect:/user/profile?success=order_cancelled";
         }
 
         return "redirect:/user/profile?error=cannot-cancel";
+    }
+
+    @GetMapping("/user/order/{id}")
+    public String getOrderDetail(@PathVariable("id") Long id, Model model, Principal principal) {
+
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+
+        if (!order.getUser().getEmail().equals(principal.getName())) {
+            return "redirect:/user/profile?error=unauthorized";
+        }
+
+        model.addAttribute("order", order);
+
+        return "user/order-detail";
     }
 }
