@@ -9,7 +9,6 @@ import org.example.springecommerce.controller.dto.BestSellerDto;
 import org.example.springecommerce.controller.dto.CategoryDto;
 import org.example.springecommerce.controller.dto.OrderCountByDayDto;
 import org.example.springecommerce.controller.dto.PromotionViewDto;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,10 +19,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
+import jakarta.validation.Valid;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,13 +39,11 @@ public class AdminController {
     @Autowired private OrderLineRepository orderLineRepository;
     @Autowired private PromotionRepository promotionRepository;
     @Autowired private ProductPromotionRepository productPromotionRepository;
+    @Autowired private PictureRepository pictureRepository;
+    @Autowired private ProductPictureRepository productPictureRepository;
 
-    @Autowired(required = false)
-    private PasswordEncoder passwordEncoder;
+    @Autowired(required = false) private PasswordEncoder passwordEncoder;
 
-    // ==========================================
-    //               DASHBOARD
-    // ==========================================
     @GetMapping("/admin/dashboard")
     public String adminHome(Model model) {
         model.addAttribute("activePage", "dashboard");
@@ -61,14 +56,24 @@ public class AdminController {
         List<BestSellerDto> bestSellers = new ArrayList<>();
         int limit = 5;
         int count = 0;
+
         for (Object[] row : bestSellersRaw) {
             if (row != null && row.length >= 2) {
                 Long productId = ((Number) row[0]).longValue();
                 Long salesCount = ((Number) row[1]).longValue();
                 Optional<Product> productOpt = productRepository.findById(productId);
+
                 if (productOpt.isPresent()) {
                     Product p = productOpt.get();
-                    bestSellers.add(new BestSellerDto(p.getId(), p.getProductName(), p.getReference(), p.getPrice(), p.getQuantity(), salesCount));
+                    bestSellers.add(new BestSellerDto(
+                            p.getId(),
+                            p.getProductName(),
+                            p.getReference(),
+                            p.getPrice(),
+                            p.getQuantity(),
+                            salesCount,
+                            p.getDefaultPicture() != null ? p.getDefaultPicture().getPictureUrl() : null
+                    ));
                 }
                 count++;
                 if (count >= limit) break;
@@ -100,10 +105,6 @@ public class AdminController {
         return ResponseEntity.ok(result);
     }
 
-    // ==========================================
-    //               UTILISATEURS
-    // ==========================================
-
     @GetMapping("/admin/users")
     public String adminUsers(Model model,
                              @RequestParam(value = "page", defaultValue = "0") int page,
@@ -114,7 +115,13 @@ public class AdminController {
         UserRole role = null;
         if (roleStr != null && !roleStr.isBlank()) { try { role = UserRole.valueOf(roleStr); } catch (Exception e) {} }
         Page<User> userPage = userRepository.searchAndFilter(search, role, PageRequest.of(page, size, Sort.by("id").descending()));
-        model.addAttribute("users", userPage.getContent()); model.addAttribute("currentPage", userPage.getNumber()); model.addAttribute("totalPages", userPage.getTotalPages()); model.addAttribute("pageSize", userPage.getSize()); model.addAttribute("totalItems", userPage.getTotalElements()); model.addAttribute("search", search); model.addAttribute("role", roleStr);
+        model.addAttribute("users", userPage.getContent());
+        model.addAttribute("currentPage", userPage.getNumber());
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("pageSize", userPage.getSize());
+        model.addAttribute("totalItems", userPage.getTotalElements());
+        model.addAttribute("search", search);
+        model.addAttribute("role", roleStr);
         return "admin/users";
     }
 
@@ -122,65 +129,54 @@ public class AdminController {
     public String saveUser(@RequestParam(value = "id", required = false) Long id,
                            @RequestParam("firstName") String firstName,
                            @RequestParam("lastName") String lastName,
-                           @RequestParam(value = "email", required = false) String email,
-                           @RequestParam(value = "birthDate", required = false) LocalDate birthDate,
+                           @RequestParam("email") String email,
+                           @RequestParam("birthDate") LocalDate birthDate,
                            @RequestParam(value = "password", required = false) String password,
                            @RequestParam(value = "active", required = false) String activeCheckbox,
                            RedirectAttributes redirectAttributes) {
 
-        User user;
-        boolean isNew = (id == null);
 
-        if (isNew) {
+        if (id == null) {
             if (birthDate == null || Period.between(birthDate, LocalDate.now()).getYears() < 18) {
-                redirectAttributes.addFlashAttribute("error", "Impossible de créer un administrateur mineur. L'âge minimum est de 18 ans.");
+                redirectAttributes.addFlashAttribute("error", "Âge minimum 18 ans.");
                 return "redirect:/admin/users";
             }
-            user = new User();
+            User user = new User();
             user.setRole(UserRole.ADMIN);
             user.setEmail(email);
             user.setBirthDate(birthDate);
+
             String passToHash = (password != null && !password.isBlank()) ? password : "Password123!";
             user.setPassword(passwordEncoder != null ? passwordEncoder.encode(passToHash) : passToHash);
-        } else {
-            Optional<User> existing = userRepository.findById(id);
-            if (existing.isEmpty()) return "redirect:/admin/users";
-            user = existing.get();
+
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setIsActivated(activeCheckbox != null);
+
+            userRepository.save(user);
         }
 
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setIsActivated(activeCheckbox != null);
-
-        userRepository.save(user);
         return "redirect:/admin/users";
     }
 
-    @PostMapping("/admin/users/delete/{id}")
-    public String deleteUser(@PathVariable("id") Long id) { Optional<User> userOpt = userRepository.findById(id); if (userOpt.isPresent()) { User u = userOpt.get(); u.setIsActivated(false); userRepository.save(u); } return "redirect:/admin/users"; }
+    @PostMapping("/admin/users/toggle/{id}")
+    public String toggleUserStatus(@PathVariable("id") Long id) {
+        userRepository.findById(id).ifPresent(u -> {
+            u.setIsActivated(u.getIsActivated() == null || !u.getIsActivated());
+            userRepository.save(u);
+        });
+        return "redirect:/admin/users";
+    }
 
     @GetMapping("/admin/users/{id}/data")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getUserData(@PathVariable("id") Long id) {
-        Optional<User> opt = userRepository.findById(id);
-        if (opt.isPresent()) {
-            User u = opt.get();
+        return userRepository.findById(id).map(u -> {
             Map<String, Object> data = new HashMap<>();
             data.put("id", u.getId());
-            data.put("firstName", u.getFirstName());
-            data.put("lastName", u.getLastName());
-            data.put("email", u.getEmail());
-            data.put("birthDate", u.getBirthDate());
-            data.put("role", u.getRole().name());
-            data.put("active", u.getIsActivated());
-            return ResponseEntity.ok(data);
-        }
-        return ResponseEntity.notFound().build();
+            return data;
+        }).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
-
-    // ==========================================
-    //               REMISES (Promotions)
-    // ==========================================
 
     @GetMapping("/admin/discounts")
     public String adminDiscounts(Model model,
@@ -190,34 +186,25 @@ public class AdminController {
         model.addAttribute("activePage", "discounts");
         Page<Promotion> promoPage = promotionRepository.searchByName(search, PageRequest.of(page, size, Sort.by("id").descending()));
         LocalDateTime now = LocalDateTime.now();
-
         List<PromotionViewDto> dtos = promoPage.getContent().stream().map(p -> {
             PromotionViewDto dto = new PromotionViewDto();
             dto.setId(p.getId());
             dto.setName(p.getName());
             dto.setDiscountRate(p.getDiscountRate());
-
             List<ProductPromotion> pps = productPromotionRepository.findAll().stream()
                     .filter(pp -> pp.getPromotion().getId().equals(p.getId()))
                     .collect(Collectors.toList());
-
             if (!pps.isEmpty()) {
                 LocalDateTime minStart = pps.stream().map(ProductPromotion::getStartDate).min(Comparator.naturalOrder()).orElse(null);
                 LocalDateTime maxEnd = pps.stream().map(ProductPromotion::getEndDate).max(Comparator.naturalOrder()).orElse(null);
                 dto.setStartDate(minStart);
                 dto.setEndDate(maxEnd);
-
-                if (minStart != null && maxEnd != null) {
-                    if (now.isBefore(minStart)) { dto.setStatus("Prochainement"); dto.setStatusColor("bg-blue-100 text-blue-700"); }
-                    else if (now.isAfter(maxEnd)) { dto.setStatus("Fini"); dto.setStatusColor("bg-gray-100 text-gray-500"); }
-                    else { dto.setStatus("Actif"); dto.setStatusColor("bg-green-100 text-green-700"); }
-                }
-            } else {
-                dto.setStatus("Inactif"); dto.setStatusColor("bg-gray-100 text-gray-400");
-            }
+                if (now.isBefore(minStart)) { dto.setStatus("Prochainement"); dto.setStatusColor("bg-blue-100 text-blue-700"); }
+                else if (now.isAfter(maxEnd)) { dto.setStatus("Fini"); dto.setStatusColor("bg-gray-100 text-gray-500"); }
+                else { dto.setStatus("Actif"); dto.setStatusColor("bg-green-100 text-green-700"); }
+            } else { dto.setStatus("Inactif"); dto.setStatusColor("bg-gray-100 text-gray-400"); }
             return dto;
         }).collect(Collectors.toList());
-
         model.addAttribute("promotions", dtos);
         model.addAttribute("currentPage", promoPage.getNumber());
         model.addAttribute("totalPages", promoPage.getTotalPages());
@@ -236,38 +223,28 @@ public class AdminController {
                                @RequestParam(value = "startDate", required = false) String startDateStr,
                                @RequestParam(value = "endDate", required = false) String endDateStr,
                                @RequestParam(value = "productIds", required = false) List<Long> productIds) {
-
-        Promotion p;
-        if (id != null) {
-            p = promotionRepository.findById(id).orElse(new Promotion());
-        } else {
-            p = new Promotion();
-        }
+        Promotion p = (id != null) ? promotionRepository.findById(id).orElse(new Promotion()) : new Promotion();
         p.setName(name);
         p.setDiscountRate(discountRate);
         p = promotionRepository.save(p);
-
         if (startDateStr != null && !startDateStr.isBlank() && endDateStr != null && !endDateStr.isBlank()) {
             LocalDateTime start = LocalDate.parse(startDateStr).atStartOfDay();
             LocalDateTime end = LocalDate.parse(endDateStr).atTime(23, 59, 59);
-
             final Long promoId = p.getId();
             List<ProductPromotion> oldLinks = productPromotionRepository.findAll().stream()
                     .filter(pp -> pp.getPromotion().getId().equals(promoId))
                     .collect(Collectors.toList());
             productPromotionRepository.deleteAll(oldLinks);
-
-            if (productIds != null && !productIds.isEmpty()) {
+            if (productIds != null) {
                 for (Long prodId : productIds) {
-                    Optional<Product> prodOpt = productRepository.findById(prodId);
-                    if (prodOpt.isPresent()) {
+                    productRepository.findById(prodId).ifPresent(prod -> {
                         ProductPromotion pp = new ProductPromotion();
-                        pp.setPromotion(p);
-                        pp.setProduct(prodOpt.get());
+                        pp.setPromotion(promoId != null ? promotionRepository.findById(promoId).get() : null);
+                        pp.setProduct(prod);
                         pp.setStartDate(start);
                         pp.setEndDate(end);
                         productPromotionRepository.save(pp);
-                    }
+                    });
                 }
             }
         }
@@ -279,31 +256,21 @@ public class AdminController {
     public ResponseEntity<Map<String, Object>> getDiscountData(@PathVariable("id") Long id) {
         Optional<Promotion> promoOpt = promotionRepository.findById(id);
         if (promoOpt.isEmpty()) return ResponseEntity.notFound().build();
-
         Promotion p = promoOpt.get();
         Map<String, Object> data = new HashMap<>();
         data.put("id", p.getId());
         data.put("name", p.getName());
         data.put("discountRate", p.getDiscountRate());
-
         List<ProductPromotion> links = productPromotionRepository.findAll().stream()
                 .filter(pp -> pp.getPromotion().getId().equals(p.getId()))
                 .collect(Collectors.toList());
-
-        List<Long> productIds = links.stream().map(pp -> pp.getProduct().getId()).collect(Collectors.toList());
-        data.put("productIds", productIds);
-
+        data.put("productIds", links.stream().map(pp -> pp.getProduct().getId()).collect(Collectors.toList()));
         if (!links.isEmpty()) {
             data.put("startDate", links.get(0).getStartDate().toLocalDate().toString());
             data.put("endDate", links.get(0).getEndDate().toLocalDate().toString());
         }
         return ResponseEntity.ok(data);
     }
-
-
-    // ==========================================
-    //               PRODUITS & COMMANDES
-    // ==========================================
 
     @GetMapping("/admin/products")
     public String adminProducts(Model model,
@@ -312,6 +279,7 @@ public class AdminController {
                                 @RequestParam(value = "search", required = false) String search,
                                 @RequestParam(value = "categoryId", required = false) Long categoryId) {
         model.addAttribute("activePage", "products");
+        // Le repo a été modifié pour ne plus filtrer isEnabled=true, donc on voit tout ici
         Page<Product> pageProducts = productRepository.searchAndFilter(search, categoryId, PageRequest.of(page, size, Sort.by("id").descending()));
         model.addAttribute("products", pageProducts.getContent());
         model.addAttribute("currentPage", pageProducts.getNumber());
@@ -324,40 +292,18 @@ public class AdminController {
         return "admin/products";
     }
 
-    @GetMapping("/admin/products/edit")
-    public String editProductForm(@RequestParam(value = "id", required = false) Long id, Model model) {
-        model.addAttribute("activePage", "products");
-        ProductForm form = new ProductForm();
-        if (id != null) {
-            Optional<Product> opt = productRepository.findById(id);
-            if (opt.isPresent()) {
-                Product p = opt.get();
-                form.setId(p.getId());
-                form.setProductName(p.getProductName());
-                form.setBrand(p.getBrand());
-                form.setPrice(p.getPrice());
-                form.setQuantity(p.getQuantity());
-                form.setDescription(p.getDescription());
-                form.setReference(p.getReference());
-                form.setColor(p.getColor());
-                form.setCategoryIds(p.getCategories().stream().map(Category::getId).collect(Collectors.toList()));
-            }
-        }
-        model.addAttribute("productForm", form);
-        model.addAttribute("categories", categoryRepository.findAll());
-        return "admin/product-edit";
-    }
-
     @PostMapping("/admin/products/edit")
-    public String saveProduct(@Valid @ModelAttribute("productForm") ProductForm form, BindingResult bindingResult, Model model) {
+    public String saveProduct(@Valid @ModelAttribute("productForm") ProductForm form,
+                              BindingResult bindingResult,
+                              @RequestParam(value = "imageUrl", required = false) String imageUrl,
+                              Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("activePage", "products");
             model.addAttribute("categories", categoryRepository.findAll());
             return "admin/product-edit";
         }
-
-        Product p = (form.getId() != null) ? productRepository.findById(form.getId()).orElse(new Product()) : new Product();
-
+        boolean isNew = (form.getId() == null);
+        Product p = isNew ? new Product() : productRepository.findById(form.getId()).orElse(new Product());
         p.setProductName(form.getProductName());
         p.setBrand(form.getBrand());
         p.setColor(form.getColor());
@@ -365,87 +311,70 @@ public class AdminController {
         p.setQuantity(form.getQuantity());
         p.setDescription(form.getDescription());
         p.setReference(form.getReference());
-
         if (p.getIsEnabled() == null) p.setIsEnabled(true);
-
-        if (form.getCategoryIds() != null && !form.getCategoryIds().isEmpty()) {
-            List<Category> selectedCats = categoryRepository.findAllById(form.getCategoryIds());
-            p.setCategories(selectedCats);
-        } else {
-            p.setCategories(new ArrayList<>());
+        if (form.getCategoryIds() != null) { p.setCategories(categoryRepository.findAllById(form.getCategoryIds())); } else { p.setCategories(new ArrayList<>()); }
+        Product savedProduct = productRepository.save(p);
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            Picture pic = new Picture();
+            pic.setName(savedProduct.getProductName());
+            pic.setPictureUrl(imageUrl);
+            pic.setIsActive(true);
+            Picture savedPic = pictureRepository.save(pic);
+            ProductPicture pp = new ProductPicture();
+            pp.setProduct(savedProduct);
+            pp.setPicture(savedPic);
+            productPictureRepository.save(pp);
+            savedProduct.setDefaultPicture(savedPic);
+            productRepository.save(savedProduct);
         }
-
-        productRepository.save(p);
         return "redirect:/admin/products";
     }
 
-    @PostMapping("/admin/products/delete/{id}")
-    public String deleteProduct(@PathVariable("id") Long id,
-                                @RequestParam(value = "page", defaultValue = "0") int page,
-                                @RequestParam(value = "size", defaultValue = "10") int size) {
-        Optional<Product> opt = productRepository.findById(id);
-        if (opt.isPresent()) {
-            Product p = opt.get();
-            p.setIsEnabled(false);
+    // --- NOUVELLE MÉTHODE TOGGLE POUR LES PRODUITS ---
+    @PostMapping("/admin/products/toggle/{id}")
+    public String toggleProductStatus(@PathVariable("id") Long id,
+                                      @RequestParam(value = "page", defaultValue = "0") int page,
+                                      @RequestParam(value = "size", defaultValue = "10") int size) {
+        productRepository.findById(id).ifPresent(p -> {
+            p.setIsEnabled(p.getIsEnabled() == null || !p.getIsEnabled());
             productRepository.save(p);
-        }
+        });
         return String.format("redirect:/admin/products?page=%d&size=%d", page, size);
     }
 
     @GetMapping("/admin/products/{id}/data")
     public ResponseEntity<ProductForm> getProductData(@PathVariable("id") Long id) {
-        Optional<Product> opt = productRepository.findById(id);
-        if (opt.isPresent()) {
-            Product p = opt.get();
-            ProductForm form = new ProductForm();
-            form.setId(p.getId());
-            form.setProductName(p.getProductName());
-            form.setBrand(p.getBrand());
-            form.setColor(p.getColor());
-            form.setPrice(p.getPrice());
-            form.setQuantity(p.getQuantity());
-            form.setDescription(p.getDescription());
-            form.setReference(p.getReference());
-
-            List<Long> catIds = p.getCategories().stream()
-                    .map(Category::getId)
-                    .collect(Collectors.toList());
-            form.setCategoryIds(catIds);
-
-            return ResponseEntity.ok(form);
-        }
-        return ResponseEntity.notFound().build();
+        return productRepository.findById(id).map(p -> {
+            ProductForm f = new ProductForm();
+            f.setId(p.getId());
+            f.setProductName(p.getProductName());
+            f.setBrand(p.getBrand());
+            f.setColor(p.getColor());
+            f.setPrice(p.getPrice());
+            f.setQuantity(p.getQuantity());
+            f.setDescription(p.getDescription());
+            f.setReference(p.getReference());
+            f.setDefaultPictureUrl(p.getDefaultPicture() != null ? p.getDefaultPicture().getPictureUrl() : null);
+            f.setCategoryIds(p.getCategories().stream().map(Category::getId).collect(Collectors.toList()));
+            return f;
+        }).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/admin/orders")
-    public String adminOrders(Model model,
-                              @RequestParam(value = "page", defaultValue = "0") int page,
-                              @RequestParam(value = "size", defaultValue = "10") int size,
-                              @RequestParam(value = "client", required = false) String client,
-                              @RequestParam(value = "status", required = false) Integer status,
-                              @RequestParam(value = "number", required = false) String number,
-                              @RequestParam(value = "date", required = false) LocalDate date) { // Ajout du paramètre
-
+    public String adminOrders(Model model, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size, @RequestParam(value = "client", required = false) String client, @RequestParam(value = "status", required = false) Integer status, @RequestParam(value = "number", required = false) String number, @RequestParam(value = "date", required = false) LocalDate date) {
         model.addAttribute("activePage", "orders");
-        Page<Order> ordersPage;
-
-        if ((client != null && !client.isBlank()) || status != null || (number != null && !number.isBlank()) || date != null) {
-            ordersPage = orderRepository.searchOrders(client, status, number, date, PageRequest.of(page, size, Sort.by("id").descending()));
-        } else {
-            ordersPage = orderRepository.findAll(PageRequest.of(page, size, Sort.by("id").descending()));
-        }
-
+        Page<Order> ordersPage = ((client != null && !client.isBlank()) || status != null || (number != null && !number.isBlank()) || date != null)
+                ? orderRepository.searchOrders(client, status, number, date, PageRequest.of(page, size, Sort.by("id").descending()))
+                : orderRepository.findAll(PageRequest.of(page, size, Sort.by("id").descending()));
         model.addAttribute("orders", ordersPage.getContent());
         model.addAttribute("currentPage", ordersPage.getNumber());
         model.addAttribute("totalPages", ordersPage.getTotalPages());
         model.addAttribute("pageSize", ordersPage.getSize());
         model.addAttribute("totalItems", ordersPage.getTotalElements());
-
         model.addAttribute("client", client);
         model.addAttribute("statusFilter", status);
         model.addAttribute("number", number);
         model.addAttribute("dateFilter", date);
-
         return "admin/orders";
     }
 
@@ -465,25 +394,19 @@ public class AdminController {
     }
 
     @PostMapping("/admin/orders/update")
-    public String updateOrder(@RequestParam("id") Long id, @RequestParam("status") String status,
-                              @RequestParam(value = "page", defaultValue = "0") int page,
-                              @RequestParam(value = "size", defaultValue = "10") int size) {
-        Optional<Order> maybe = orderRepository.findById(id);
-        if (maybe.isPresent()) {
-            Order o = maybe.get();
+    public String updateOrder(@RequestParam("id") Long id, @RequestParam("status") String status, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size) {
+        orderRepository.findById(id).ifPresent(o -> {
             int statusCode;
             try { statusCode = OrderStatus.valueOf(status).getCode(); }
             catch (Exception ex) { statusCode = OrderStatus.PENDING.getCode(); }
             o.setStatus(statusCode);
             orderRepository.save(o);
-        }
+        });
         return String.format("redirect:/admin/orders?page=%d&size=%d", page, size);
     }
 
     @PostMapping("/admin/orders/delete/{id}")
-    public String deleteOrder(@PathVariable("id") Long id,
-                              @RequestParam(value = "page", defaultValue = "0") int page,
-                              @RequestParam(value = "size", defaultValue = "10") int size) {
+    public String deleteOrder(@PathVariable("id") Long id, @RequestParam(value = "page", defaultValue = "0") int page, @RequestParam(value = "size", defaultValue = "10") int size) {
         orderRepository.deleteById(id);
         return String.format("redirect:/admin/orders?page=%d&size=%d", page, size);
     }
@@ -492,74 +415,38 @@ public class AdminController {
     public String adminProfile(Model model, Principal principal) {
         model.addAttribute("activePage", "profile");
         if (principal != null) {
-            String email = principal.getName();
-            Optional<User> adminOpt = userRepository.findByEmail(email);
-            if (adminOpt.isPresent()) {
-                model.addAttribute("admin", adminOpt.get());
-                return "admin/profile";
-            }
+            userRepository.findByEmail(principal.getName()).ifPresent(admin -> model.addAttribute("admin", admin));
+            return "admin/profile";
         }
         return "redirect:/login";
     }
 
     @PostMapping("/admin/profile/update")
-    public String updateAdminProfile(@RequestParam("firstName") String firstName,
-                                     @RequestParam("lastName") String lastName,
-                                     @RequestParam("email") String email,
-                                     @RequestParam(value = "currentPassword", required = false) String currentPassword,
-                                     @RequestParam(value = "newPassword", required = false) String newPassword,
-                                     @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
-                                     Principal principal,
-                                     Model model) {
+    public String updateAdminProfile(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName, @RequestParam("email") String email, @RequestParam(value = "newPassword", required = false) String newPassword, @RequestParam(value = "confirmPassword", required = false) String confirmPassword, Principal principal, Model model) {
         if (principal == null) return "redirect:/login";
-
-        String currentEmail = principal.getName();
-        Optional<User> adminOpt = userRepository.findByEmail(currentEmail);
-
-        if (adminOpt.isPresent()) {
-            User admin = adminOpt.get();
+        userRepository.findByEmail(principal.getName()).ifPresent(admin -> {
             admin.setFirstName(firstName);
             admin.setLastName(lastName);
-            if (newPassword != null && !newPassword.isBlank()) {
-                if (newPassword.equals(confirmPassword)) {
-                    admin.setPassword(passwordEncoder.encode(newPassword));
-                } else {
-                    model.addAttribute("error", "Les nouveaux mots de passe ne correspondent pas.");
-                    model.addAttribute("admin", admin);
-                    return "admin/profile";
-                }
+            if (newPassword != null && !newPassword.isBlank() && newPassword.equals(confirmPassword)) {
+                admin.setPassword(passwordEncoder.encode(newPassword));
             }
             userRepository.save(admin);
-        }
+        });
         return "redirect:/admin/profile?success";
     }
 
-
     @PostMapping("/admin/categories/create")
     @ResponseBody
-    public ResponseEntity<CategoryDto> createCategory(@RequestParam("name") String name,
-                                                      @RequestParam(value = "parentId", required = false) Long parentId) {
-        if (name == null || name.trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
+    public ResponseEntity<CategoryDto> createCategory(@RequestParam("name") String name, @RequestParam(value = "parentId", required = false) Long parentId) {
+        if (name == null || name.trim().isEmpty()) return ResponseEntity.badRequest().build();
         Category category = new Category();
         category.setName(name);
-
-        if (parentId != null) {
-            Optional<Category> parentOpt = categoryRepository.findById(parentId);
-            parentOpt.ifPresent(category::setParentCategory);
-        }
-
+        if (parentId != null) categoryRepository.findById(parentId).ifPresent(category::setParentCategory);
         Category saved = categoryRepository.save(category);
-
         CategoryDto dto = new CategoryDto();
         dto.setId(saved.getId());
         dto.setName(saved.getName());
-        if (saved.getParentCategory() != null) {
-            dto.setParentCategoryId(saved.getParentCategory().getId());
-        }
-
+        if (saved.getParentCategory() != null) dto.setParentCategoryId(saved.getParentCategory().getId());
         return ResponseEntity.ok(dto);
     }
 }

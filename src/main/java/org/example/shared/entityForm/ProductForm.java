@@ -35,5 +35,7 @@ public class ProductForm {
     @NotBlank(message = "La référence est obligatoire")
     private String reference;
 
+    private String defaultPictureUrl;
+
     private List<Long> categoryIds;
 }
