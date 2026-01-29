@@ -21,7 +21,7 @@ public class ProductSpecification {
             }
 
             if (categoryIds != null && !categoryIds.isEmpty()) {
-                predicates.add(root.get("category").get("id").in(categoryIds));
+                predicates.add(root.join("categories").get("id").in(categoryIds));
             }
 
             if (colors != null && !colors.isEmpty()) {
