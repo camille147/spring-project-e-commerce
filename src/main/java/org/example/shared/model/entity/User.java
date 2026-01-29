@@ -58,6 +58,16 @@ public class User {
     @Column
     private Boolean isActivated = true;
 
+    @Column
+    private LocalDateTime deletedAt;
+
+    @Column(nullable = false)
+    private boolean privacyConsent = false;
+
+@Column
+    private LocalDateTime consentDate;
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Order> orders;
 

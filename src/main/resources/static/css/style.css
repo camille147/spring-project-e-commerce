@@ -210,3 +210,16 @@ img {
         transform: translateY(0);
     }
 }
+
+.consent-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 12px;
+    width: 100%;
+}
+
+#privacyConsent {
+    width: auto;
+    margin-top: 4px;
+}

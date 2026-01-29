@@ -32,7 +32,6 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired private ProductPromotionRepository productPromotionRepository;
 
     @Override
-    // On retire @Transactional ici pour éviter de bloquer la table sur 1500+ insertions
     public void run(String... args) throws Exception {
 
         if (productRepository.count() > 0 || userRepository.count() > 0) {
@@ -44,7 +43,6 @@ public class DataInitializer implements CommandLineRunner {
         Random random = new Random();
         java.util.Set<String> usedEmails = new java.util.HashSet<>();
 
-        // Bornes de dates pour 2025 - 2026
         java.util.Date startDate = java.sql.Timestamp.valueOf("2025-01-01 00:00:00");
         java.util.Date endDate = java.sql.Timestamp.valueOf("2026-12-31 23:59:59");
 
@@ -69,10 +67,10 @@ public class DataInitializer implements CommandLineRunner {
             pool.add(pictureRepository.save(pic));
         }
 
-        // 4. Admin & Test User
+        // 4. Admin & Test User (Mis à jour RGPD)
         createDefaultUsers(usedEmails);
 
-        // 5. Pool d'utilisateurs
+        // 5. Pool d'utilisateurs (150 utilisateurs)
         List<User> userPool = new ArrayList<>();
         for (int i = 0; i < 150; i++) {
             String email;
@@ -85,8 +83,13 @@ public class DataInitializer implements CommandLineRunner {
             u.setLastName(faker.name().lastName());
             u.setRole(UserRole.USER);
             u.setIsActivated(true);
-            u.setCreatedAt(LocalDateTime.now().minusDays(faker.number().numberBetween(1, 30)));
+            u.setCreatedAt(LocalDateTime.now().minusDays(faker.number().numberBetween(1, 365)));
             u.setBirthDate(faker.date().birthday(18, 60).toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+
+            // LOGIQUE RGPD
+            u.setPrivacyConsent(true);
+            u.setConsentDate(u.getCreatedAt()); // Consentement donné à la création
+
             userRepository.save(u);
             userPool.add(u);
             usedEmails.add(email);
@@ -117,7 +120,6 @@ public class DataInitializer implements CommandLineRunner {
             p.setDefaultPicture(pool.get(random.nextInt(5)));
             productRepository.save(p);
 
-            // Images secondaires
             for (int j = 0; j < 2; j++) {
                 ProductPicture ppic = new ProductPicture();
                 ppic.setProduct(p);
@@ -125,7 +127,6 @@ public class DataInitializer implements CommandLineRunner {
                 productPictureRepository.save(ppic);
             }
 
-            // 7. Commandes massives (tous les 3 produits)
             if (i % 3 == 0) {
                 ProductPromotion pp = new ProductPromotion();
                 pp.setProduct(p);
@@ -137,7 +138,6 @@ public class DataInitializer implements CommandLineRunner {
                 User randomUser = userPool.get(random.nextInt(userPool.size()));
                 Address userAddr = addressRepository.findByUserAndIsActiveTrue(randomUser).get(0);
 
-                // Optimisation : On prépare des listes pour insérer en lot (batch)
                 List<Order> ordersToSave = new ArrayList<>();
                 List<OrderLine> linesToSave = new ArrayList<>();
 
@@ -148,18 +148,13 @@ public class DataInitializer implements CommandLineRunner {
                     o.setStatus(1);
                     o.setUser(randomUser);
                     o.setAddress(userAddr);
-
-                    // Date aléatoire entre 2025 et 2026
                     java.util.Date randomDate = faker.date().between(startDate, endDate);
                     o.setCreatedAt(randomDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-
                     ordersToSave.add(o);
                 }
 
-                // Sauvegarde des commandes par lot
                 orderRepository.saveAll(ordersToSave);
 
-                // Création des lignes de commande liées
                 for (Order o : ordersToSave) {
                     OrderLine ol = new OrderLine();
                     ol.setOrder(o);
@@ -169,11 +164,9 @@ public class DataInitializer implements CommandLineRunner {
                     linesToSave.add(ol);
                 }
                 orderLineRepository.saveAll(linesToSave);
-                System.out.println("Batch inséré pour produit : " + p.getProductName());
             }
         }
-
-        System.out.println(">> Fake Data générée avec succès !");
+        System.out.println(">> Fake Data générée avec succès (RGPD included) !");
     }
 
     private void createDefaultUsers(java.util.Set<String> usedEmails) {
@@ -187,19 +180,32 @@ public class DataInitializer implements CommandLineRunner {
             admin.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
             admin.setCreatedAt(LocalDateTime.now());
             admin.setIsActivated(true);
+
+            // RGPD
+            admin.setPrivacyConsent(true);
+            admin.setConsentDate(LocalDateTime.now());
+
             userRepository.save(admin);
             usedEmails.add(admin.getEmail());
         }
-        User user = new User();
-        user.setRole(UserRole.USER);
-        user.setEmail("test@test.com");
-        user.setPassword(passwordEncoder.encode("password"));
-        user.setFirstName("Camille");
-        user.setLastName("Pinault");
-        user.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setIsActivated(true);
-        userRepository.save(user);
-        usedEmails.add(user.getEmail());
+
+        if (userRepository.findByEmail("test@test.com").isEmpty()) {
+            User user = new User();
+            user.setRole(UserRole.USER);
+            user.setEmail("test@test.com");
+            user.setPassword(passwordEncoder.encode("password"));
+            user.setFirstName("Camille");
+            user.setLastName("Pinault");
+            user.setBirthDate(java.time.LocalDate.of(1990, 1, 1));
+            user.setCreatedAt(LocalDateTime.now());
+            user.setIsActivated(true);
+
+            // RGPD
+            user.setPrivacyConsent(true);
+            user.setConsentDate(LocalDateTime.now());
+
+            userRepository.save(user);
+            usedEmails.add(user.getEmail());
+        }
     }
 }

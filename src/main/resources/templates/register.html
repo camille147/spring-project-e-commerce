@@ -44,6 +44,13 @@
         </div>
       </div>
     </div>
+    <div class="register-form-group consent-container" style="margin-top: 20px;">
+      <input type="checkbox" th:field="*{privacyConsent}" id="privacyConsent" required>
+      <label for="privacyConsent" style="font-size: 12px; color: #666; cursor: pointer;">
+        J'ai lu et j'accepte la <a th:href="@{/rgpd/privacy-policy}" target="_blank" style="color: #D4AF37; text-decoration: underline;">Politique de Confidentialité</a>.
+      </label>
+    </div>
+
     <button type="submit" id="register-button">S'inscrire</button>
     <p class="small-text"><a th:href="@{/login}">Déjà un compte ? Se connecter</a></p>
   </form>

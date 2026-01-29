@@ -29,4 +29,7 @@ public class UserRegisterForm {
 
     @NotNull(message = "Date de naissance requise")
     private LocalDate birthDate;
+
+    @NotNull(message = "Vous devez accepter la politique de confidentialité")
+    private Boolean privacyConsent;
 }

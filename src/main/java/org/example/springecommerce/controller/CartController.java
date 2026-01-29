@@ -105,7 +105,7 @@ public class CartController {
             CartItem item = cart.get(itemId);
 
             if ("add".equals(action)) {
-                // VERIFICATION : Quantité au panier + 1 doit être <= Stock total
+                // quantité au panier + 1 doit être <= Stock total
                 if (item.getQuantity() < product.getQuantity()) {
                     item.setQuantity(item.getQuantity() + 1);
                 }
