@@ -96,14 +96,21 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-400">
                         <div class="flex items-center gap-4">
-                            <button type="button" class="edit-btn hover:text-anthracite transition" th:attr="data-id=${u.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                            <form th:action="@{/admin/users/delete/{id}(id=${u.id})}" method="post" onsubmit="return confirm('Désactiver cet utilisateur ?')">
-                                <button type="submit" class="hover:text-danger-text transition" title="Désactiver">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+
+                            <form th:action="@{/admin/users/toggle/{id}(id=${u.id})}" method="post">
+                                <button th:if="${u.isActivated}" type="submit" class="hover:text-danger-text transition" title="Désactiver (Bloquer)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                <button th:if="${!u.isActivated}" type="submit" class="hover:text-success-text transition" title="Activer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
                                 </button>
                             </form>
+
                         </div>
                     </td>
                 </tr>
@@ -162,17 +169,14 @@
                         <input name="lastName" id="m_lastName" type="text" placeholder="Nom" class="w-full border-2 border-platine rounded-btn px-4 py-2" required />
                     </div>
 
-                    <div id="emailContainer">
-                        <label class="block mb-1 text-sm font-medium">Email</label>
-                        <input name="email" id="m_email" type="email" placeholder="Email" class="w-full border-2 border-platine rounded-btn px-4 py-2" required />
-                    </div>
+                    <input name="email" id="m_email" type="email" placeholder="Email" class="w-full border-2 border-platine rounded-btn px-4 py-2" required />
 
-                    <div id="birthDateContainer">
+                    <div>
                         <label class="block mb-1 text-sm font-medium">Date de naissance</label>
                         <input name="birthDate" id="m_birthDate" type="date" class="w-full border-2 border-platine rounded-btn px-4 py-2" required />
                     </div>
 
-                    <div id="passwordContainer">
+                    <div>
                         <label class="block mb-1 text-sm font-medium">Mot de passe</label>
                         <input name="password" id="m_password" type="password" placeholder="Par défaut: Password123!" class="w-full border-2 border-platine rounded-btn px-4 py-2" />
                     </div>
@@ -198,43 +202,11 @@
         document.getElementById('modalTitle').innerText = "Nouvel Administrateur";
         document.getElementById('userForm').reset();
         document.getElementById('m_id').value = '';
-
-        // AFFICHER LES CHAMPS CRITIQUES EN CRÉATION
-        document.getElementById('emailContainer').classList.remove('hidden');
-        document.getElementById('birthDateContainer').classList.remove('hidden');
-        document.getElementById('passwordContainer').classList.remove('hidden');
-
-        // ACTIVER LE REQUIRED
-        document.getElementById('m_email').required = true;
-        document.getElementById('m_birthDate').required = true;
-
         document.getElementById('m_isActivated').checked = true;
         openModal();
     }
 
     function closeModal() { document.getElementById('userModal').classList.add('hidden'); document.getElementById('userModal').classList.remove('flex'); }
-
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.getAttribute('data-id');
-            document.getElementById('modalTitle').innerText = "Modifier l'utilisateur";
-            const res = await fetch(`/admin/users/${id}/data`);
-            const data = await res.json();
-            document.getElementById('m_id').value = data.id;
-            document.getElementById('m_firstName').value = data.firstName;
-            document.getElementById('m_lastName').value = data.lastName;
-
-            document.getElementById('emailContainer').classList.add('hidden');
-            document.getElementById('birthDateContainer').classList.add('hidden');
-            document.getElementById('passwordContainer').classList.add('hidden');
-
-            document.getElementById('m_email').required = false;
-            document.getElementById('m_birthDate').required = false;
-
-            document.getElementById('m_isActivated').checked = data.active;
-            openModal();
-        });
-    });
 </script>
 </body>
 </html>

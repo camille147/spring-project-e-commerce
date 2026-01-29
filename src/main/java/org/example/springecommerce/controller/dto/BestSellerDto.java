@@ -14,5 +14,5 @@ public class BestSellerDto {
     private Double price;
     private Integer quantity;
     private Long salesCount;
-
+    private String pictureUrl;
 }
