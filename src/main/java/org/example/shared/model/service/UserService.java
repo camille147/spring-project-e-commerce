@@ -46,8 +46,8 @@ public class UserService {
 
         user.setFirstName("Utilisateur");
         user.setLastName("Supprimé");
-        user.setEmail("deleted_" + userId + "_" + System.currentTimeMillis() + "@techzone.fr");
-        user.setPassword("DELETED_ACCOUNT_" + System.currentTimeMillis());
+        user.setEmail(user.getEmail());
+        user.setPassword(user.getPassword());
         user.setBirthDate(LocalDate.of(1900, 1, 1));
 
         user.setIsActivated(false);
