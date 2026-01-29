@@ -1,11 +1,11 @@
 package org.example.springecommerce.controller;
 
-import jakarta.transaction.Transactional;
 import org.example.shared.model.entity.Order;
 import org.example.shared.model.service.OrderService;
 import org.example.shared.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional; // Import Spring préférable
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,21 +27,20 @@ public class OrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commande introuvable"));
 
-        // order est à utili connecté
         if (!order.getUser().getEmail().equals(principal.getName())) {
             return "redirect:/user/profile?error=unauthorized";
         }
 
-        // annulation que si status en attente ou payée
         if (order.getStatus() == 0 || order.getStatus() == 1) {
             orderService.cancelOrder(order);
-            return "redirect:/user/profile?success=order_cancelled";
+            return "redirect:/user/order/" + id + "?success=cancelled";
         }
 
         return "redirect:/user/profile?error=cannot-cancel";
     }
 
     @GetMapping("/user/order/{id}")
+    @Transactional
     public String getOrderDetail(@PathVariable("id") Long id, Model model, Principal principal) {
 
         Order order = orderRepository.findById(id)
@@ -54,5 +53,19 @@ public class OrderController {
         model.addAttribute("order", order);
 
         return "user/order-detail";
+    }
+
+    @GetMapping("/user/order/confirmation/{id}")
+    @Transactional // Indispensable pour charger les produits (orderLines) pour le résumé
+    public String showConfirmationPage(@PathVariable Long id, Model model, Principal principal) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commande introuvable"));
+
+        if (!order.getUser().getEmail().equals(principal.getName())) {
+            return "redirect:/user/shop";
+        }
+
+        model.addAttribute("order", order);
+        return "user/order-confirmation";
     }
 }
