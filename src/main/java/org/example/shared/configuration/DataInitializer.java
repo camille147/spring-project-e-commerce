@@ -109,7 +109,6 @@ public class DataInitializer implements CommandLineRunner {
             p.setReference("TZ-" + faker.random().hex(8).toUpperCase());
             p.setIsEnabled(true);
             p.setCategories(List.of(smartphone, audio));
-
             // IMAGE PAR DÉFAUT UNIQUE (Une image du pool différente pour chaque i)
             p.setDefaultPicture(pool.get(i));
 
