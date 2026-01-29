@@ -2,6 +2,7 @@ package org.example.springecommerce.controller;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import org.example.shared.model.entity.Address;
 import org.example.shared.model.DTO.CartItem;
 import org.example.shared.model.entity.*;
 import org.example.shared.repository.*;

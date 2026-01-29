@@ -35,13 +35,13 @@ public class ProductControllerApi {
         return repository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @GetMapping({"/products/search/{name}", "/products/{name}"})
+    @GetMapping({"/products/search/{name}"})
     public List<ProductDto> searchByName(@PathVariable String name) {
         List<Product> found = repository.findByProductNameIgnoreCaseContaining(name);
         return found.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    @GetMapping("/products/{id:\\d+}")
+    @GetMapping("/products/{id}")
     public ResponseEntity<ProductDto> findById(@PathVariable Long id) {
         Optional<Product> p = repository.findById(id);
         return p.map(prod -> ResponseEntity.ok(toDto(prod))).orElseGet(() -> ResponseEntity.notFound().build());

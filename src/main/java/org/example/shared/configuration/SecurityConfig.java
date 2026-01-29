@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .securityMatcher("/api/**") //config QUE pour URLs /api/...
                 .csrf(csrf -> csrf.disable()) // Désactivé pour les API REST
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // seules les routes d'authentification sont publiques
+                        .requestMatchers("/api/auth/**", "/api/products/**", "/api/category/**").permitAll() // seules les routes d'authentification sont publiques
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // sécurise les routes admin
                         .anyRequest().authenticated() //tout le reste requiert un Token

@@ -49,7 +49,7 @@ public class Product {
     @NotBlank(message = "The reference product is mandatory")
     private String reference;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "product_category_rel",
             joinColumns = @JoinColumn(name = "product_id"),
@@ -62,7 +62,8 @@ public class Product {
     private Picture defaultPicture;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
-    private List<ProductPromotion> productPromotions;
+    private List<ProductPromotion> productPromotions = new ArrayList<>();
+
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

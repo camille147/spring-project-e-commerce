@@ -166,9 +166,14 @@
                                 </td>
                             </tr>
 
-                            <tr class="border-b border-platine/50" th:if="${product.category != null}">
-                                <th class="py-3 pr-4 font-bold text-obsidienne">Catégorie</th>
-                                <td class="py-3 text-gray-600 font-medium" th:text="${product.category.name}">Informatique</td>
+                            <tr class="border-b border-platine/50" th:if="${product.categories != null && !product.categories.isEmpty()}">
+                                <th class="py-3 pr-4 font-bold text-obsidienne">Catégorie(s)</th>
+                                <td class="py-3 text-gray-600 font-medium">
+                                    <span th:each="cat, iterStat : ${product.categories}">
+                                        <span th:text="${cat.name}"></span>
+                                        <span th:if="${!iterStat.last}">, </span>
+                                    </span>
+                                </td>
                             </tr>
                             </tbody>
                         </table>
