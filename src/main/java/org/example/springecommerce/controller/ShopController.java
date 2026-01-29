@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-
 @Controller
 public class ShopController {
 
@@ -41,26 +40,41 @@ public class ShopController {
                 Sort.by(sortParts[0]).ascending() :
                 Sort.by(sortParts[0]).descending();
 
-        Pageable pageable = PageRequest.of(page, 9, sortOrder);
+        Pageable pageable = PageRequest.of(page, 12, sortOrder);
 
         Specification<Product> spec = ProductSpecification.filterProducts(keyword, categoryId, colors, price);
         Page<Product> productPage = productRepository.findAll(spec, pageable);
 
+        int totalPages = productPage.getTotalPages();
+        int currentPage = page;
+        int radius = 2;
 
+        int startPage = Math.max(0, currentPage - radius);
+        int endPage = Math.min(totalPages - 1, currentPage + radius);
+
+        if (startPage == 0) {
+            endPage = Math.min(totalPages - 1, startPage + (radius * 2));
+        }
+        if (endPage == totalPages - 1) {
+            startPage = Math.max(0, endPage - (radius * 2));
+        }
 
         model.addAttribute("product", productPage.getContent());
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("selectedColors", colors);
         model.addAttribute("categoryId", categoryId);
+
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", productPage.getTotalPages());
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+
         model.addAttribute("categories", categoryRepository.findAll());
-        model.addAttribute("totalPages", productPage.getTotalPages());
         model.addAttribute("availableColors", productRepository.findAllDistinctColors());
 
+        model.addAttribute("brands", productRepository.findAllDistinctBrands());
 
         return "user/shop";
-
     }
 }
