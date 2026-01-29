@@ -27,7 +27,7 @@ public class AddressDto {
     private String zipCode;
 
     @NotBlank
-    @Size(min = 3)
+    @Size(min = 2)
     private String country;
 
     private Boolean isActive;
