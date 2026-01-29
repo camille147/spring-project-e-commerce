@@ -78,7 +78,8 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-gray-400">
                         <div class="flex items-center gap-4">
-                            <button type="button" class="edit-btn hover:text-or-champagne transition" th:attr="data-id=${p.id}">
+                            <button type="button" class="edit-btn hover:text-or-champagne transition"
+                                    th:data-url="@{/admin/discounts/{id}/data(id=${p.id})}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             </button>
                         </div>
@@ -174,22 +175,25 @@
                              class="product-item flex items-center gap-3 mb-3 last:mb-0 hover:bg-gray-50 p-2 rounded transition cursor-pointer"
                              onclick="toggleCheckbox(this)"
                              th:attr="data-name=${#strings.toLowerCase(prod.productName)},
-                                      data-ref=${#strings.toLowerCase(prod.reference)},
-                                      data-category=${prod.category != null ? prod.category.id : ''}">
+              data-ref=${#strings.toLowerCase(prod.reference)},
+              data-category=${!prod.categories.empty ? prod.categories[0].id : ''}">
 
                             <input type="checkbox"
                                    name="productIds"
                                    th:value="${prod.id}"
                                    th:id="'prod_' + ${prod.id}"
-                                   class="w-5 h-5 accent-anthracite cursor-pointer product-checkbox rounded border-gray-300 pointer-events-none"> <div class="flex-1">
-                            <div class="flex justify-between">
-                                <span class="font-medium text-anthracite" th:text="${prod.productName}">Macbook</span>
-                                <span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded"
-                                      th:if="${prod.category != null}"
-                                      th:text="${prod.category.name}">Électronique</span>
+                                   class="w-5 h-5 accent-anthracite cursor-pointer product-checkbox rounded border-gray-300 pointer-events-none">
+
+                            <div class="flex-1">
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-anthracite" th:text="${prod.productName}">Macbook</span>
+
+                                    <span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded"
+                                          th:if="${!prod.categories.empty}"
+                                          th:text="${prod.categories[0].name}">Électronique</span>
+                                </div>
+                                <span class="text-xs text-gray-400 block" th:text="'Ref: ' + ${prod.reference}">REF123</span>
                             </div>
-                            <span class="text-xs text-gray-400 block" th:text="'Ref: ' + ${prod.reference}">REF123</span>
-                        </div>
                         </div>
 
                         <div id="noResultMsg" class="hidden text-center text-gray-500 mt-4 text-sm">
@@ -210,7 +214,6 @@
 </main>
 
 <script>
-    // --- GESTION MODALE ---
     function openModal() { document.getElementById('promoModal').classList.remove('hidden'); document.getElementById('promoModal').classList.add('flex'); }
 
     function openModalForCreate() {
@@ -218,19 +221,16 @@
         document.getElementById('promoForm').reset();
         document.getElementById('m_id').value = '';
 
-        // Reset filtre
         document.getElementById('modalProductSearch').value = '';
         document.getElementById('modalCategoryFilter').value = '';
-        filterProducts(); // Réafficher tout
+        filterProducts();
 
-        // Décocher tout
         document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
         openModal();
     }
 
     function closeModal() { document.getElementById('promoModal').classList.add('hidden'); document.getElementById('promoModal').classList.remove('flex'); }
 
-    // --- FILTRAGE JAVASCRIPT ---
     function filterProducts() {
         const searchText = document.getElementById('modalProductSearch').value.toLowerCase();
         const categoryId = document.getElementById('modalCategoryFilter').value;
@@ -261,52 +261,54 @@
         }
     }
 
-    // Petit helper pour cocher en cliquant sur la ligne entière
     function toggleCheckbox(div) {
         const checkbox = div.querySelector('input[type="checkbox"]');
         checkbox.checked = !checkbox.checked;
     }
 
-    // --- EDIT ---
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.getAttribute('data-id');
-            document.getElementById('modalTitle').innerText = "Modifier la promotion";
 
-            try {
-                const res = await fetch(`/admin/discounts/${id}/data`);
-                const data = await res.json();
+    (function attachEditBtnListeners() {
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
 
-                document.getElementById('m_id').value = data.id;
-                document.getElementById('m_name').value = data.name;
-                document.getElementById('m_discountRate').value = data.discountRate;
+                const url = btn.getAttribute('data-url');
+                document.getElementById('modalTitle').innerText = "Modifier la promotion";
 
-                if(data.startDate) document.getElementById('m_startDate').value = data.startDate;
-                if(data.endDate) document.getElementById('m_endDate').value = data.endDate;
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error("Erreur réseau: " + res.status);
 
-                // Reset UI Filtre
-                document.getElementById('modalProductSearch').value = '';
-                document.getElementById('modalCategoryFilter').value = '';
-                filterProducts();
+                    const data = await res.json();
 
-                // Reset Checkboxes
-                document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
+                    document.getElementById('m_id').value = data.id || '';
+                    document.getElementById('m_name').value = data.name || '';
+                    document.getElementById('m_discountRate').value = data.discountRate || '';
 
-                // Cocher les produits liés
-                if (data.productIds && Array.isArray(data.productIds)) {
-                    data.productIds.forEach(prodId => {
-                        const checkbox = document.querySelector(`.product-checkbox[value="${prodId}"]`);
-                        if (checkbox) checkbox.checked = true;
-                    });
+                    document.getElementById('m_startDate').value = data.startDate ? data.startDate : '';
+                    document.getElementById('m_endDate').value = data.endDate ? data.endDate : '';
+
+                    document.getElementById('modalProductSearch').value = '';
+                    document.getElementById('modalCategoryFilter').value = '';
+                    filterProducts();
+
+                    document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = false);
+
+                    if (data.productIds && Array.isArray(data.productIds)) {
+                        data.productIds.forEach(prodId => {
+                            const checkbox = document.querySelector('.product-checkbox[value="' + prodId + '"]');
+                            if (checkbox) checkbox.checked = true;
+                        });
+                    }
+
+                    openModal();
+                } catch(err) {
+                    console.error("Erreur chargement promo:", err);
+                    alert("Impossible de charger les données (voir console).");
                 }
-
-                openModal();
-            } catch(err) {
-                console.error(err);
-                openModal();
-            }
+            });
         });
-    });
+    })();
 </script>
 </body>
 </html>

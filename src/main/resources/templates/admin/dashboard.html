@@ -60,7 +60,7 @@
 <aside th:fragment="admin-sidebar" id="sidebar" class="fixed top-0 left-0 z-50 h-screen w-72 bg-obsidienne text-platine transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col border-r border-white/5">
 
     <div class="flex items-center justify-center h-32 border-b border-white/5">
-        <img src="../../static/files/logo.png" alt="TechZone Logo" class="h-20 w-auto object-contain">
+        <img th:src="@{/files/logo.png}" src="/files/logo.png" alt="TechZone Logo" class="h-20 w-auto object-contain">
     </div>
 
     <nav class="flex-1 overflow-y-auto no-scrollbar py-8 px-4 space-y-4">
@@ -184,7 +184,7 @@
             <div class="flex flex-col gap-2">
                 <span class="text-gray-500 font-medium text-sm">Total de vente</span>
                 <span class="text-3xl font-bold font-montserrat text-anthracite"
-                      th:text="${#numbers.formatDecimal(totalSales, 1, 2, 'COMMA')} + ' €'">0,00 €</span>
+                      th:text="${#numbers.formatDecimal(totalRevenue, 1, 2, 'COMMA')} + ' €'">0,00 €</span>
             </div>
             <div class="w-12 h-12 rounded-full bg-[#EAFCF2] flex items-center justify-center text-success-text">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>

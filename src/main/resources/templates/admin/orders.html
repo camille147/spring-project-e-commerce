@@ -44,19 +44,24 @@
         <form method="get" th:action="@{/admin/orders}" class="bg-white p-4 rounded-[14px] shadow-sm flex flex-wrap gap-4 items-center">
 
             <div class="relative flex-1 min-w-[200px]">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            </span>
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </span>
                 <input type="text" name="client" th:value="${client}" placeholder="Client (nom/email)"
                        class="w-full pl-10 pr-4 py-2 border border-platine rounded-md focus:outline-none focus:border-anthracite transition">
             </div>
 
             <div class="relative flex-1 min-w-[150px]">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
-            </span>
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+                </span>
                 <input type="text" name="number" th:value="${number}" placeholder="N° commande"
                        class="w-full pl-10 pr-4 py-2 border border-platine rounded-md focus:outline-none focus:border-anthracite transition">
+            </div>
+
+            <div class="relative w-40">
+                <input type="date" name="date" th:value="${dateFilter}"
+                       class="w-full border border-platine rounded-md px-3 py-2 focus:outline-none focus:border-anthracite transition text-gray-600 bg-white cursor-pointer">
             </div>
 
             <div class="relative w-48">
@@ -77,75 +82,82 @@
         </form>
     </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full table-spacing">
-                <thead>
-                <tr>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Commande</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Client</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Montant</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="text-sm">
-                <tr th:each="o : ${orders}" class="table-row-card shadow-sm hover:shadow-md transition-shadow">
-                    <td class="px-6 py-4 whitespace-nowrap"><span class="font-bold" th:text="'#' + ${o.orderNumber}">#000</span></td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex flex-col">
-                            <span class="font-medium" th:text="${o.user != null ? o.user.firstName + ' ' + o.user.lastName : 'Inconnu'}">Nom</span>
-                            <span class="text-xs text-gray-400" th:text="${o.user != null ? o.user.email : ''}">Email</span>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap font-medium">
-                        <span th:text="${#numbers.formatDecimal(o.total, 1, 'COMMA', 2, 'POINT')} + ' €'">0.00 €</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+    <div class="overflow-x-auto">
+        <table class="w-full table-spacing">
+            <thead>
+            <tr>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Commande</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Client</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Montant</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
+                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="text-sm">
+            <tr th:each="o : ${orders}" class="table-row-card shadow-sm hover:shadow-md transition-shadow">
+                <td class="px-6 py-4 whitespace-nowrap"><span class="font-bold" th:text="'#' + ${o.orderNumber}">#000</span></td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex flex-col">
+                        <span class="font-medium" th:text="${o.user != null ? o.user.firstName + ' ' + o.user.lastName : 'Inconnu'}">Nom</span>
+                        <span class="text-xs text-gray-400" th:text="${o.user != null ? o.user.email : ''}">Email</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium" th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                    <span th:text="${#numbers.formatDecimal(o.total, 1, 'COMMA', 2, 'POINT')} + ' €'">0.00 €</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold gap-2"
                               th:classappend="${o.status == 0} ? ' bg-status-pending-bg text-status-pending-text' : (${o.status == 1} ? ' bg-status-paid-bg text-status-paid-text' : (${o.status == 2} ? ' bg-status-shipped-bg text-status-shipped-text' : ' bg-status-delivered-bg text-status-delivered-text'))">
                             <span class="w-2 h-2 rounded-full" th:classappend="${o.status == 0} ? ' bg-status-pending-text' : (${o.status == 1} ? ' bg-status-paid-text' : (${o.status == 2} ? ' bg-status-shipped-text' : ' bg-status-delivered-text'))"></span>
                             <span th:text="${T(org.example.shared.model.enumeration.OrderStatus).fromCode(o.status).getLabel()}"></span>
                         </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center gap-4">
-                            <button type="button" class="edit-btn text-gray-400 hover:text-or-champagne" th:attr="data-id=${o.id}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center gap-4">
+                        <button type="button" class="edit-btn text-gray-400 hover:text-or-champagne" th:attr="data-id=${o.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                        </button>
+                        <form th:action="@{/admin/orders/delete/{id}(id=${o.id})}" method="post" onsubmit="return confirm('Supprimer cette commande ?')">
+                            <input type="hidden" name="page" th:value="${currentPage}" />
+                            <button type="submit" class="text-gray-400 hover:text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
-                            <form th:action="@{/admin/orders/delete/{id}(id=${o.id})}" method="post" onsubmit="return confirm('Supprimer cette commande ?')">
-                                <input type="hidden" name="page" th:value="${currentPage}" />
-                                <button type="submit" class="text-gray-400 hover:text-red-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
-        <div th:if="${totalPages > 0}" class="flex items-center justify-between mt-8 text-sm text-gray-500">
-            <div>Affichage de <span th:text="${orders.size()}">0</span> lignes sur <span th:text="${totalItems}">0</span></div>
-            <div class="flex items-center gap-2">
-                <a th:href="@{/admin/orders(page=${currentPage - 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
-                   th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
-                   class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </a>
-                <div class="flex gap-1" th:with="start=${(currentPage - 2 < 0) ? 0 : currentPage - 2}, end=${(start + 4 >= totalPages) ? totalPages - 1 : start + 4}">
-                    <a th:each="i : ${#numbers.sequence(start, end)}"
-                       th:href="@{/admin/orders(page=${i}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
-                       th:text="${i + 1}"
-                       th:classappend="${i == currentPage} ? 'bg-or-champagne text-white' : 'bg-white hover:bg-gray-100'"
-                       class="w-8 h-8 flex items-center justify-center rounded transition"></a>
-                </div>
-                <a th:href="@{/admin/orders(page=${currentPage + 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number})}"
-                   th:classappend="${currentPage >= totalPages - 1} ? 'pointer-events-none opacity-50' : ''"
-                   class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </a>
+    <div th:if="${totalPages > 0}" class="flex items-center justify-between mt-8 text-sm text-gray-500">
+        <div>Affichage de <span th:text="${orders.size()}">0</span> lignes sur <span th:text="${totalItems}">0</span></div>
+        <div class="flex items-center gap-2">
+            <a th:href="@{/admin/orders(page=${currentPage - 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number}, date=${dateFilter})}"
+               th:classappend="${currentPage == 0} ? 'pointer-events-none opacity-50' : ''"
+               class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+
+            <div class="flex gap-1" th:with="start=${(currentPage - 2 < 0) ? 0 : currentPage - 2}, end=${(start + 4 >= totalPages) ? totalPages - 1 : start + 4}">
+                <a th:each="i : ${#numbers.sequence(start, end)}"
+                   th:href="@{/admin/orders(page=${i}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number}, date=${dateFilter})}"
+                   th:text="${i + 1}"
+                   th:classappend="${i == currentPage} ? 'bg-or-champagne text-white' : 'bg-white hover:bg-gray-100'"
+                   class="w-8 h-8 flex items-center justify-center rounded transition"></a>
             </div>
+
+            <a th:href="@{/admin/orders(page=${currentPage + 1}, size=${pageSize}, client=${client}, status=${statusFilter}, number=${number}, date=${dateFilter})}"
+               th:classappend="${currentPage >= totalPages - 1} ? 'pointer-events-none opacity-50' : ''"
+               class="w-8 h-8 flex items-center justify-center bg-white rounded hover:bg-gray-100 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </a>
         </div>
     </div>
 
@@ -191,7 +203,7 @@
             document.getElementById('m_orderNumber').innerText = '#' + data.orderNumber;
             document.getElementById('m_customerName').innerText = data.customerName;
             document.getElementById('m_totalAmount').innerText = data.totalAmount.toFixed(2) + ' €';
-            document.getElementById('m_status').value = data.statusEnumName; // Utilise le nom de l'enum
+            document.getElementById('m_status').value = data.statusEnumName;
             openModal();
         });
     });

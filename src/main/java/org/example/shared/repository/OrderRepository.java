@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -31,9 +32,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "OR LOWER(o.user.lastName) LIKE LOWER(CONCAT('%', :client, '%')) " +
             "OR LOWER(o.user.email) LIKE LOWER(CONCAT('%', :client, '%')))) " +
             "AND (:status IS NULL OR o.status = :status) " +
-            "AND (:number IS NULL OR o.orderNumber LIKE CONCAT('%', :number, '%'))")
+            "AND (:number IS NULL OR o.orderNumber LIKE CONCAT('%', :number, '%')) " +
+            "AND (:date IS NULL OR CAST(o.createdAt AS date) = :date)")
     Page<Order> searchOrders(@Param("client") String client,
-                              @Param("status") Integer status,
-                              @Param("number") String number,
-                              Pageable pageable);
+                             @Param("status") Integer status,
+                             @Param("number") String number,
+                             @Param("date") LocalDate date,
+                             Pageable pageable);
 }

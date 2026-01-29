@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ProductForm {
     private Long id;
@@ -20,6 +22,9 @@ public class ProductForm {
     @Positive(message = "Le prix doit être positif")
     private Double price;
 
+    @NotBlank(message = "La couleur est obligatoire")
+    private String color;
+
     @NotNull(message = "Le stock est obligatoire")
     @Min(value = 0, message = "Le stock ne peut pas être négatif")
     private Integer quantity;
@@ -30,6 +35,5 @@ public class ProductForm {
     @NotBlank(message = "La référence est obligatoire")
     private String reference;
 
-    @NotNull(message = "Veuillez choisir une catégorie")
-    private Long categoryId;
+    private List<Long> categoryIds;
 }

@@ -22,6 +22,11 @@ public class ProductController {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
+        if (product.getIsEnabled() == null || !product.getIsEnabled()) {
+            throw new RuntimeException("Ce produit n'est plus disponible.");
+        }
+
+        @SuppressWarnings("unchecked")
         Map<Long, CartItem> cart = (Map<Long, CartItem>) session.getAttribute("cart");
 
         int quantityInCart = 0;
@@ -30,6 +35,7 @@ public class ProductController {
         }
 
         int maxAvailable = product.getQuantity() - quantityInCart;
+        if (maxAvailable < 0) maxAvailable = 0; // Sécurité visuelle
 
         model.addAttribute("product", product);
         model.addAttribute("maxAvailable", maxAvailable);
@@ -37,5 +43,4 @@ public class ProductController {
 
         return "user/product-detail";
     }
-
 }
