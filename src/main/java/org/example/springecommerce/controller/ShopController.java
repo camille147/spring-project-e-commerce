@@ -1,6 +1,7 @@
 package org.example.springecommerce.controller;
 
 import org.example.shared.model.entity.Product;
+import org.example.shared.model.service.ShopService;
 import org.example.shared.repository.CategoryRepository;
 import org.example.shared.repository.ProductRepository;
 import org.example.shared.repository.specification.ProductSpecification;
@@ -21,10 +22,7 @@ import java.util.List;
 public class ShopController {
 
     @Autowired
-    private ProductRepository productRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private ShopService shopService;
 
     @GetMapping("/user/shop")
     public String displayShop(Model model,
@@ -35,6 +33,7 @@ public class ShopController {
                               @RequestParam(required = false) Double price,
                               @RequestParam(defaultValue = "price,asc") String sort) {
 
+        // Gestion du tri
         String[] sortParts = sort.split(",");
         Sort sortOrder = sortParts[1].equalsIgnoreCase("asc") ?
                 Sort.by(sortParts[0]).ascending() :
@@ -42,23 +41,22 @@ public class ShopController {
 
         Pageable pageable = PageRequest.of(page, 12, sortOrder);
 
-        Specification<Product> spec = ProductSpecification.filterProducts(keyword, categoryId, colors, price);
-        Page<Product> productPage = productRepository.findAll(spec, pageable);
+        // appel au service
+        Page<Product> productPage = shopService.getFilteredProducts(keyword, categoryId, colors, price, pageable);
 
+        // logique de calcul de la pagination
         int totalPages = productPage.getTotalPages();
-        int currentPage = page;
         int radius = 2;
-
-        int startPage = Math.max(0, currentPage - radius);
-        int endPage = Math.min(totalPages - 1, currentPage + radius);
+        int startPage = Math.max(0, page - radius);
+        int endPage = Math.min(totalPages - 1, page + radius);
 
         if (startPage == 0) {
             endPage = Math.min(totalPages - 1, startPage + (radius * 2));
-        }
-        if (endPage == totalPages - 1) {
+        } else if (endPage == totalPages - 1) {
             startPage = Math.max(0, endPage - (radius * 2));
         }
 
+        // modelm
         model.addAttribute("product", productPage.getContent());
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
@@ -70,10 +68,10 @@ public class ShopController {
         model.addAttribute("startPage", startPage);
         model.addAttribute("endPage", endPage);
 
-        model.addAttribute("categories", categoryRepository.findAll());
-        model.addAttribute("availableColors", productRepository.findAllDistinctColors());
-
-        model.addAttribute("brands", productRepository.findAllDistinctBrands());
+        // filtre
+        model.addAttribute("categories", shopService.getAllCategories());
+        model.addAttribute("availableColors", shopService.getAvailableColors());
+        model.addAttribute("brands", shopService.getAvailableBrands());
 
         return "user/shop";
     }
